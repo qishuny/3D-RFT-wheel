@@ -21,6 +21,7 @@ pointList = [];
 areaList = [];
 normalList = [];
 
+%i is the iD of the face
 for i = 117:144
     [pointarray, areaarray, normalarray] = generatePointsfromFace(mesh,i);
     pointList = [pointList pointarray];
@@ -84,7 +85,10 @@ function [pointarray, areaarray, normalarray] = generatePointsfromFace(mesh,face
             n = [((y2-y1)*(z3-z1)-(y3-y1)*(z2-z1));
                 ((z2-z1)*(x3-x1)-(x2-x1)*(z3-z1));
                 ((x2-x1)*(y3-y1)-(x3-x1)*(y2-y1));];
-            
+            magn = sqrt(n(1,1)^2+n(2,1)^2+n(3,1)^2);
+            n = [(n(1,1)/magn);
+                (n(2,1)/magn);
+                (n(3,1)/magn)];
             pointarray = [pointarray [mean(temp(1,:)); mean(temp(2,:));mean(temp(3,:))]];
             areaarray = [areaarray AreaTemp];
             normalarray= [normalarray n];

@@ -9,6 +9,7 @@ pointList = wheel.pointList;
 areaList = area.areaList;
 normalList = normal.normalList;
 rList = sqrt(pointList(2,:).^2+pointList(3,:).^2);
+
 % mm/s
 w = 2;
 
@@ -25,7 +26,7 @@ vy = cos(angleList).*rList.*w+vcorz;
 
 
 figure
-plot3(pointList(1,:),pointList(2,:),pointList(3,:),'ok','MarkerFaceColor','g')
+plot3(pointList(1,:),pointList(2,:),pointList(3,:),'ok','MarkerFaceColor','b')
 hold on
 quiver3(pointList(1,:),pointList(2,:),pointList(3,:),normalList(1,:),normalList(2,:),normalList(3,:),10,'r');
 axisP = plot3([0,60],[0,0],[0,0]);
@@ -34,9 +35,5 @@ daspect([1 1 1])
 
 
 figure
-% plot3(pointList(1,:),pointList(2,:),pointList(3,:),'ok','MarkerFaceColor','g')
-% hold on
 quiver3(pointList(1,:),pointList(2,:),pointList(3,:),vx,vy,vz,2,'r');
-% axisP = plot3([0,60],[0,0],[0,0]);
-% axisP.LineWidth = 3;
 daspect([1 1 1])
