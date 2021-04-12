@@ -1,7 +1,10 @@
+%% 3D RFT Modeling
+% Qishun Yu Catherine Pavlov
+% 02/21/2021
 clear all
 close all
 clc
-
+%% Read Points
 % read element information generated from meshstuff.m
 % element values are stored in .mat files
 wheel = matfile('wheel.mat');
@@ -29,6 +32,9 @@ numofNormal = size(normalList,2);
 e2List = [normalList(1,:);
     normalList(2,:);
     zeros(1,numofNormal)];
+idxe2 = (e2List(1,:)==0 & e2List(2,:)==0);
+e2List = 1.*idxe2+e2List.*(~idxe2);
+
 magn = sqrt(e2List(1,:).^2+e2List(2,:).^2+e2List(3,:).^2);
 e2List = [e2List(1,:)./magn;
     e2List(2,:)./magn;
@@ -38,6 +44,7 @@ e1List = [e2List(1,:).*cos(-pi/2)+e2List(2,:).*-sin(-pi/2);
     e2List(1,:).*sin(-pi/2)+e2List(2,:).*cos(-pi/2);
     e2List(3,:)];
 
+tic
 
 % angular speed mm/s
 w = 2;
@@ -60,33 +67,64 @@ betaList = wrapToPi(betaList);
 gammaList = atan2(v23List(3,:),sqrt(v23List(2,:).^2+v23List(1,:).^2));
 gammaList = wrapToPi(gammaList);
 
+% find which points are below the surface
+% sand with respect to the center of the wheel mm
+depth = -20;
 
+idx = pointList(3,:)<depth;
 
+forcePoints = pointList(:,idx);
+numofForce = size(forcePoints,2);
+F1 = zeros(1,numofForce);
+F23 = zeros(1,numofForce);
+
+forceBeta = betaList(idx);
+forceGamma = gammaList(idx);
+
+forceV1 = v1List(:,idx);
+forceV23 = v23List(:,idx);
+forceV = vList(:,idx);
+
+forcee1 = e1List(:,idx);
+forcee2 = e2List(:,idx);
+
+%mm^2
+forceArea = areaList(idx);
+%mm
+forceDepth = abs(depth-forcePoints(3,:));
 [ay1,az1] = alpha_func(0,0);
-ax23  = zeros(1,numofNormal);
-az23 = zeros(1,numofNormal);
+ax23  = zeros(1,numofForce);
+az23 = zeros(1,numofForce);
 
+ay1 = zeros(1,numofForce)+ay1;
 
-F1 = zeros(1,numofNormal)+ay1;
-F23 = zeros(1,numofNormal);
-
-for i = 1:numofNormal
-    [ax23(i),az23(i)] = alpha_func(betaList(i),gammaList(i));
+for i = 1:numofForce
+    [ax23(i),az23(i)] = alpha_func(forceBeta(i),forceGamma(i));
 end
 
+% F1 force in N
+F1tilde = ay1.*forceDepth.*forceArea*10^-3.*forcee1;
+F2tilde = -ax23.*forceDepth.*forceArea*10^-3.*forcee2;
+F2tilde(3,:) = az23.*forceDepth.*forceArea*10^-3;
+[f1, f23] = normalScale(forceV1,forceV23,forceV);
 
+Force = sum(f1.*F1tilde+f23.*F2tilde,2)
+toc
+%% Plot stuff
 % figure
 % for k =1:150:size(pointList,2)
 %     plot3(pointList(1,k),pointList(2,k),pointList(3,k),'ok','MarkerFaceColor',[0,0.5,0.5])
 %     hold on 
-% %     text(pointList(1,k),pointList(2,k),pointList(3,k),string(betalList(k)*180/pi))
-%     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),normalList(1,k),normalList(2,k),normalList(3,k),10,'Color', [0,0.2,0.8]);
-%     
+%     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),normalList(1,k),normalList(2,k),normalList(3,k),10,'Color', [0,0.2,0.8]);  
 %     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e1List(1,k),e1List(2,k),e1List(3,k),10,'r');
 %     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e2List(1,k),e2List(2,k),e2List(3,k),10,'g');
-%     legend('point','normal vector','e2 axis','e1 axis')
+%     legend('point','normal vector','e1 axis','e2 axis')
 % end
-% daspect([1 1 1])
+figure
+plot3(pointList(1,:),pointList(2,:),pointList(3,:),'ok','MarkerFaceColor',[0,0.5,0.5])
+hold on
+plot3(forcePoints(1,:),forcePoints(2,:),forcePoints(3,:),'ok','MarkerFaceColor',[0.5,0.0,0.5])
+daspect([1 1 1])
 % 
 % figure
 % for k =1:150:size(pointList,2)
@@ -109,8 +147,11 @@ end
 % end
 % daspect([1 1 1])
 
+%% Functions
+% find the local alphax and alphaz with give gamma and beta
+% return alpha in N/(cm^3)
 function [alphaX, alphaZ] = alpha_func(beta,gamma)
-    % using discrete Fourier transform fitting function
+    % using discrete Fourier transform fitting function [Li et al., 2013]
     % beta [-pi,pi]
     % gamma [-pi,pi]
     % Fourier coefficients M
@@ -152,4 +193,20 @@ function [alphaX, alphaZ] = alpha_func(beta,gamma)
             +M(8)*sin(-2*beta+gamma)+M(9)*sin(2*beta));
     end
 
+end
+
+
+% Compute f1, f23 from v1 v23 v
+% the sigmoid functions are from [Treers et al., 2021]
+function [f1, f23] = normalScale(v1,v23,v)
+    num = size(v1,2);
+    f1 = zeros(1,num);
+    f23 = zeros(1,num);
+    magv1 = sqrt(v1(1,:).^2+v1(2,:).^2+v1(3,:).^2);
+    magv23 = sqrt(v23(1,:).^2+v23(2,:).^2+v23(3,:).^2);
+    magv = sqrt(v(1,:).^2+v(2,:).^2+v(3,:).^2);
+    v1v = magv1./magv;
+    v23v = magv23./magv;
+    f1 = v1v;
+    f23 = v23v;
 end
