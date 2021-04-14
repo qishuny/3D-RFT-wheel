@@ -1,23 +1,20 @@
 %% 3D RFT Modeling
 % Qishun Yu Catherine Pavlov
 % 02/21/2021
-clear all
-close all
-clc
+
 %% Read Points
 % read element information generated from meshstuff.m
 % element values are stored in .mat files
-wheel = matfile('wheel.mat');
-area = matfile('area.mat');
-normal = matfile('normal.mat');
+
+data = matfile('data/pointData.mat');
 
 % WILL CHANGE WITH ROTATION
 % element points information (3*n) [x;y;z]
-pointList = wheel.pointList;
+pointList = data.pointList;
 
 % WILL NOT CHANGE WITH ROTATION
 % element areas information (1*n)
-areaList = area.areaList;
+areaList = data.areaList;
 % element radius to the center information (1*n)
 rList = sqrt(pointList(2,:).^2+pointList(3,:).^2);
 numofElements = size(pointList,2);
@@ -26,35 +23,38 @@ numofElements = size(pointList,2);
 % element tangent angle (1*n)
 angleList = atan2(pointList(3,:),pointList(2,:))+pi/2;
 % element normal vectors information (3*n)
-normalList = normal.normalList;
+normalList = data.normalList;
 numofNormal = size(normalList,2);
 %e2 unit axis
 e2List = [normalList(1,:);
     normalList(2,:);
     zeros(1,numofNormal)];
 idxe2 = (e2List(1,:)==0 & e2List(2,:)==0);
-e2List = 1.*idxe2+e2List.*(~idxe2);
+e2List(2,:) = 1.*idxe2+e2List(2,:).*(~idxe2);
 
-magn = sqrt(e2List(1,:).^2+e2List(2,:).^2+e2List(3,:).^2);
-e2List = [e2List(1,:)./magn;
-    e2List(2,:)./magn;
-    e2List(3,:)./magn;];
+magne2 = sqrt(e2List(1,:).^2+e2List(2,:).^2+e2List(3,:).^2);
+e2List = [e2List(1,:)./magne2;
+    e2List(2,:)./magne2;
+    e2List(3,:)./magne2;];
 %e1 unit axis
 e1List = [e2List(1,:).*cos(-pi/2)+e2List(2,:).*-sin(-pi/2);
     e2List(1,:).*sin(-pi/2)+e2List(2,:).*cos(-pi/2);
     e2List(3,:)];
-
+magne1 = sqrt(e1List(1,:).^2+e1List(2,:).^2+e1List(3,:).^2);
+e1List = [e1List(1,:)./magne1;
+    e1List(2,:)./magne1;
+    e1List(3,:)./magne1;];
 tic
 
 % angular speed mm/s
 w = 2;
 % the velocity of the center of the wheel mm/s
-vcorx = 200;
-vcory = 0;
+vcorx = 0;
+vcory = 53*2;
 vcorz = 0;
 vx = zeros([1,size(angleList,2)])+vcorx;
-vz = sin(angleList).*rList.*w+vcory;
-vy = cos(angleList).*rList.*w+vcorz;
+vy = -cos(angleList).*rList.*w+vcory;
+vz = sin(angleList).*rList.*w+vcorz;
 
 vList = [vx;vy;vz];
 
@@ -111,6 +111,9 @@ F2tilde(3,:) = az23.*forceDepth.*forceArea*10^-3;
 Force = sum(f1.*F1tilde+f23.*F2tilde,2)
 toc
 %% Plot stuff
+
+%Plot selected normal vector and e1,e2
+
 % figure
 % for k =1:150:size(pointList,2)
 %     plot3(pointList(1,k),pointList(2,k),pointList(3,k),'ok','MarkerFaceColor',[0,0.5,0.5])
@@ -119,13 +122,21 @@ toc
 %     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e1List(1,k),e1List(2,k),e1List(3,k),10,'r');
 %     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e2List(1,k),e2List(2,k),e2List(3,k),10,'g');
 %     legend('point','normal vector','e1 axis','e2 axis')
+%     daspect([1 1 1])
 % end
+
+%Plot points below the surface
+
 figure
-plot3(pointList(1,:),pointList(2,:),pointList(3,:),'ok','MarkerFaceColor',[0,0.5,0.5])
-hold on
-plot3(forcePoints(1,:),forcePoints(2,:),forcePoints(3,:),'ok','MarkerFaceColor',[0.5,0.0,0.5])
+
+% plot3(forcePoints(1,:),forcePoints(2,:),forcePoints(3,:),'ok','MarkerFaceColor',[0.5,0.0,0.5])
+% hold on
+% quiver3(forcePoints(1,:),forcePoints(2,:),forcePoints(3,:),forceV(1,:),forceV(2,:),forceV(3,:),'Color', [0,0.2,0.8]);  
+quiver3(pointList(1,:),pointList(2,:),pointList(3,:),vList(1,:),vList(2,:),vList(3,:),'Color', [0,0.2,0.8]);  
 daspect([1 1 1])
-% 
+
+%Plot velocity and v1 v23
+
 % figure
 % for k =1:150:size(pointList,2)
 %     plot3(pointList(1,k),pointList(2,k),pointList(3,k),'ok','MarkerFaceColor',[0,0.5,0.5])
@@ -136,6 +147,9 @@ daspect([1 1 1])
 %     legend('point','velocity','v1','v23')
 % end
 % daspect([1 1 1])
+
+
+
 % 
 % figure
 % for k =1:150:size(pointList,2)

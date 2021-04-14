@@ -4,13 +4,14 @@ clc
 
 
 model = createpde();
-gc = importGeometry(model,'Rover_wheel_printable_straight.stl');
+gc = importGeometry(model,'wheel model/Rover_wheel_printable_straight.stl');
 
 figure
 pdegplot(model,'FaceLabels','on')
 rotate(gc,180,[0 53 0],[53 0 0]);
 rotate(gc,180,[0 0 0],[50 0 0]);
 rotate(gc,90,[0 0 0],[0 1 0]);
+rotate(gc,180,[24 0 0],[24 1 0]);
 
 mesh = generateMesh(model,'Hmax',2,'GeometricOrder','linear');
 
@@ -45,6 +46,7 @@ figure
 plot3(pointList(1,:),pointList(2,:),pointList(3,:),'ok','MarkerFaceColor','g')
 daspect([1 1 1])
 
+save('pointData.mat','pointList','normalList','areaList')
 function [pointarray, areaarray, normalarray] = generatePointsfromFace(mesh,faceID)
     pointarray = [];
     areaarray = [];
