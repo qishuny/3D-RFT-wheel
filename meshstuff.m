@@ -18,35 +18,37 @@ mesh = generateMesh(model,'Hmax',2,'GeometricOrder','linear');
 figure
 pdeplot3D(model)
 
-pointList = [];
-areaList = [];
-normalList = [];
+Points = [];
+Area = [];
+Normals = [];
 
 %i is the iD of the face
 for i = 117:144
     [pointarray, areaarray, normalarray] = generatePointsfromFace(mesh,i);
-    pointList = [pointList pointarray];
-    areaList = [areaList areaarray];
-    normalList = [normalList normalarray];
+    Points = [Points pointarray];
+    Area = [Area areaarray];
+    Normals = [Normals normalarray];
 end
 for i = 42:113
     [pointarray, areaarray, normalarray] = generatePointsfromFace(mesh,i);
-    pointList = [pointList pointarray];
-    areaList = [areaList areaarray];
-    normalList = [normalList normalarray];
+    Points = [Points pointarray];
+    Area = [Area areaarray];
+    Normals = [Normals normalarray];
 end
 for i = 2:26
     [pointarray, areaarray, normalarray] = generatePointsfromFace(mesh,i);
-    pointList = [pointList pointarray];
-    areaList = [areaList areaarray];
-    normalList = [normalList normalarray];
+    Points = [Points pointarray];
+    Area = [Area areaarray];
+    Normals = [Normals normalarray];
 end
 
 figure
-plot3(pointList(1,:),pointList(2,:),pointList(3,:),'ok','MarkerFaceColor','g')
+plot3(Points(1,:),Points(2,:),Points(3,:),'ok','MarkerFaceColor','g')
+quiver3(Points(1,:),Points(2,:),Points(3,:),Normals(1,:),Normals(2,:),Normals(3,:));
 daspect([1 1 1])
 
-save('pointData.mat','pointList','normalList','areaList')
+
+save('pointData.mat','Points','Area','Normals')
 function [pointarray, areaarray, normalarray] = generatePointsfromFace(mesh,faceID)
     pointarray = [];
     areaarray = [];
