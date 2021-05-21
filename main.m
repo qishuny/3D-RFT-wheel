@@ -1,69 +1,44 @@
 %% 3D RFT Modeling
 % Qishun Yu Catherine Pavlov
 % 02/21/2021
+close all
 
+%% Read wheel Data
 
-%% Read Points
-% read element information generated from meshstuff.m
-% element values are stored in .mat files
-
+% points (3*n) data.Points
+% area (1*n) data.Area
+% normal vectors (3*n) data.Normals
 
 % data = matfile('data/smooth_wheel_125.mat');
 data = matfile('data/wheel_106.mat');
+% data = matfile('data/plate.mat');
 
-% WILL CHANGE WITH ROTATION
-% element points information (3*n) [x;y;z]
+
+% SET angular speed mm/s
+% SET radius of the wheel mm
+w = -2;
+radius = 53;
+
 pointList = data.Points;
-
-% WILL NOT CHANGE WITH ROTATION
-% element areas information (1*n)
 areaList = data.Area;
-% element radius to the center information (1*n)
-rList = sqrt(pointList(2,:).^2+pointList(3,:).^2);
-numofElements = size(pointList,2);
-
-% WILL CHANGE WITH ROTATION
-% element tangent angle (1*n)
-angleList = atan2(pointList(3,:),pointList(2,:))+pi/2;
-% element normal vectors information (3*n)
 normalList = data.Normals;
-numofNormal = size(normalList,2);
-%e2 unit axis
-e2List = [normalList(1,:);
-    normalList(2,:);
-    zeros(1,numofNormal)];
-idxe2 = (e2List(1,:)==0 & e2List(2,:)==0);
-e2List(2,:) = 1.*idxe2+e2List(2,:).*(~idxe2);
 
-magne2 = sqrt(e2List(1,:).^2+e2List(2,:).^2+e2List(3,:).^2);
-e2List = [e2List(1,:)./magne2;
-    e2List(2,:)./magne2;
-    e2List(3,:)./magne2;];
-%e1 unit axis
-e1List = [e2List(1,:).*cos(-pi/2)+e2List(2,:).*-sin(-pi/2);
-    e2List(1,:).*sin(-pi/2)+e2List(2,:).*cos(-pi/2);
-    e2List(3,:)];
+pointSize = size(pointList,2);
+
+[e1List, e2List] = calc_e1e2(normalList);
+[vList, vHoriList] = calc_Vel(pointList, w, radius);
+
+
+
 
 tic
 
-% angular speed mm/s
-w = -2;
-% the velocity of the center of the wheel mm/s
-vcorx = 0;
-vcory = 62.5*2;
-vcorz = 0;
-vx = zeros([1,size(angleList,2)])+vcorx;
-vy = cos(angleList).*rList.*w+vcory;
-vz = sin(angleList).*rList.*w+vcorz;
 
-vList = [vx;vy;vz];
 
-vHoriList = [vx;vy;zeros(1,size(angleList,2))];
+% idxV = (vHoriList(1,:)==0 & vHoriList(2,:)==0);
+% vHoriList(2,:) = 1.*idxV+vHoriList(2,:).*(~idxV);
 
-c = bsxfun(@cross,vHoriList,e2List);
-d = sum(bsxfun(@times,vHoriList,e2List),1);%dot
-% phi = atan2(sqrt(sum(c.^2,1)),d);
-phi = calcAngles(vHoriList, e2List);
+phi = calc_Angles(vHoriList, e2List);
 phi = wrapToPi(phi);
 
 v1List = dot(vList,e1List)./1.*e1List;
@@ -71,13 +46,13 @@ v23List = vList-v1List;
 % add pi/2
 nAngleList = atan2(normalList(3,:),sqrt(normalList(2,:).^2+normalList(1,:).^2));
 
-betaList = calcAngles(normalList, e2List);
+betaList = calc_Angles(normalList, e2List);
 idxBeta = normalList(3,:)<0;
 betaList(idxBeta) = -betaList(idxBeta);
 betaList = betaList+pi/2;
 betaList = wrapToPi(betaList);
 
-gammaList = calcAngles(v23List, e2List);
+gammaList = calc_Angles(v23List, e2List);
 % idxGamma = v23List(3,:)>0;
 % gammaList(idxGamma) = -gammaList(idxGamma);
 gammaList = wrapToPi(gammaList);
@@ -109,14 +84,14 @@ forcee2 = e2List(:,idx);
 forceArea = areaList(idx);
 %mm
 forceDepth = abs(depth-forcePoints(3,:));
-[ay1,az1] = alpha_func(0,0);
+[ay1,az1] = calc_alpha(0,0);
 ax23  = zeros(1,numofForce);
 az23 = zeros(1,numofForce);
 
 ay1 = zeros(1,numofForce)+ay1;
 
 for i = 1:numofForce
-    [ax23(i),az23(i)] = alpha_func(forceBeta(i),forceGamma(i));
+    [ax23(i),az23(i)] = calc_alpha(forceBeta(i),forceGamma(i));
 end
 
 magF1 = ay1.*forceDepth.*forceArea*10^-3;
@@ -232,11 +207,9 @@ daspect([1 1 1])
 
 %% Functions
 
-function rotation
-end
 % find the local alphax and alphaz with give gamma and beta
 % return alpha in N/(cm^3)
-function [alphaX, alphaZ] = alpha_func(beta,gamma)
+function [alphaX, alphaZ] = calc_alpha(beta,gamma)
     % using discrete Fourier transform fitting function [Li et al., 2013]
     % beta [-pi,pi]
     % gamma [-pi,pi]
@@ -317,10 +290,51 @@ function [f1, f23] = normalScale(phi)
 end
 
 
-function angles = calcAngles(v1, v2)
+function angles = calc_Angles(v1, v2)
     dotprd =v1(1,:).*v2(1,:)+v1(2,:).*v2(2,:)+v1(3,:).*v2(3,:);
     timeprd = sqrt(v1(1,:).^2+v1(2,:).^2+v1(3,:).^2).*sqrt(v2(1,:).^2+v2(2,:).^2+v2(3,:).^2);
     angles = acos((dotprd)./(timeprd));
+end
+
+function [e1List, e2List] = calc_e1e2(normalList)
+    numofNormal = size(normalList,2);
+    %e2 unit axis
+    e2List = [normalList(1,:);
+        normalList(2,:);
+        zeros(1,numofNormal)];
+    idxe2 = (e2List(1,:)==0 & e2List(2,:)==0);
+    e2List(2,:) = 1.*idxe2+e2List(2,:).*(~idxe2);
+
+    magne2 = sqrt(e2List(1,:).^2+e2List(2,:).^2+e2List(3,:).^2);
+    e2List = [e2List(1,:)./magne2;
+        e2List(2,:)./magne2;
+        e2List(3,:)./magne2;];
+    %e1 unit axis
+    e1List = [e2List(1,:).*cos(-pi/2)+e2List(2,:).*-sin(-pi/2);
+        e2List(1,:).*sin(-pi/2)+e2List(2,:).*cos(-pi/2);
+        e2List(3,:)];
+
+end
+
+function [vList, vHoriList] = calc_Vel(pointList, w, radius)
+    % element radius to the center information (1*n)
+    rList = sqrt(pointList(2,:).^2+pointList(3,:).^2);
+
+    % element tangent angle (1*n)
+    angleList = atan2(pointList(3,:),pointList(2,:))+pi/2;
+
+    % angular speed mm/s
+    % the velocity of the center of the wheel mm/s
+    vcorx = 0;
+    vcory = radius*2;
+    vcorz = 0;
+    vx = zeros([1,size(angleList,2)])+vcorx;
+    vy = cos(angleList).*rList.*w+vcory;
+    vz = sin(angleList).*rList.*w+vcorz;
+
+    vList = [vx;vy;vz];
+
+    vHoriList = [vx;vy;zeros(1,size(angleList,2))];
 end
 
 % function c = cross_dim1(a,b)
