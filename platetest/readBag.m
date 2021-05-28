@@ -1,6 +1,9 @@
 %%
 robot = importrobot('urdf/irb120_3_58.urdf');
 
+%plate area cm2
+plateA = 42.64152 * 32.56534/100;
+
 [timeP1, forceData1, timeF1, positionData1]= read(1,robot);
 [timeP2, forceData2, timeF2, positionData2]= read(2,robot);
 [timeP3, forceData3, timeF3, positionData3]= read(3,robot);
@@ -12,7 +15,7 @@ force1 = forceData1(:,3)-zeroF1;
 force1 = -force1(1160:2321);
 zeroP1 = positionData1(1160,3);
 depth1 = positionData1(1160:2321,3)-zeroP1;
-depth1 = -depth1;
+depth1 = -depth1.*100;
 
 
 %% Trial 2
@@ -21,7 +24,7 @@ force2 = forceData2(:,3)-zeroF2;
 force2 = -force2(2500:3800);
 zeroP2 = positionData2(2500,3);
 depth2 = positionData2(2500:3800,3)-zeroP2;
-depth2 = -depth2;
+depth2 = -depth2.*100;
 
 %% Trial 3
 zeroF3 = forceData3(1,3);
@@ -29,7 +32,7 @@ force3 = forceData3(:,3)-zeroF3;
 force3 = -force3(2101:3301);
 zeroP3 = positionData3(2101,3);
 depth3 = positionData3(2101:3301,3)-zeroP3;
-depth3 = -depth3;
+depth3 = -depth3.*100;
 
 %% Trial 4
 zeroF4 = forceData4(1,3);
@@ -37,7 +40,7 @@ force4 = forceData4(:,3)-zeroF4;
 force4 = -force4(2453:3730);
 zeroP4 = positionData4(2453,3);
 depth4 = positionData4(2453:3730,3)-zeroP4;
-depth4 = -depth4;
+depth4 = -depth4.*100;
 
 %% Trial 5
 zeroF5 = forceData5(1,3);
@@ -45,10 +48,9 @@ force5 = forceData5(:,3)-zeroF3;
 force5 = -force5(2101:3361);
 zeroP5 = positionData5(2101,3);
 depth5 = positionData5(2101:3361,3)-zeroP5;
-depth5 = -depth5;
+depth5 = -depth5.*100;
 
 figure
-
 plot(depth1,force1)
 hold on
 plot(depth2,force2)
@@ -56,14 +58,45 @@ plot(depth3,force3)
 plot(depth4,force4)
 plot(depth5,force5)
 legend('trial 1','trial 2','trial 3','trial 4','trial 5');
+xlabel('depth cm')
+ylabel('force N')
 
 figure
-plot(timeP2,positionData2(:,3))
-legend('end effector z')
+
+plot(depth1,force1./plateA)
+hold on
+plot(depth2,force2./plateA)
+plot(depth3,force3./plateA)
+plot(depth4,force4./plateA)
+plot(depth5,force5./plateA)
+legend('trial 1','trial 2','trial 3','trial 4','trial 5');
+xlabel('depth cm')
+ylabel('stress N/cm2')
 
 figure
-plot(timeF2,forceData2)
-legend('force x', 'force y', 'force z')
+s1 = (force1./plateA)./depth1;
+s2 = (force2./plateA)./depth2;
+s3 = (force3./plateA)./depth3;
+s4 = (force4./plateA)./depth4;
+s5 = (force5./plateA)./depth5;
+plot(depth1(100:end),s1(100:end))
+hold on
+plot(depth2(300:end),s2(300:end))
+plot(depth3(100:end),s3(100:end))
+plot(depth4(300:end),s4(300:end))
+plot(depth5(100:end),s5(100:end))
+legend('trial 1','trial 2','trial 3','trial 4','trial 5');
+xlabel('depth cm')
+ylabel('stress per unit depth N/cm3')
+
+
+% figure
+% plot(timeP2,positionData2(:,3))
+% legend('end effector z')
+% 
+% figure
+% plot(timeF2,forceData2)
+% legend('force x', 'force y', 'force z')
 
 
 function [time1Data, forceData, time2Data, positionData]= read(trial,robot)

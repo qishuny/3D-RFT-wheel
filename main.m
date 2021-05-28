@@ -27,35 +27,18 @@ pointSize = size(pointList,2);
 
 [e1List, e2List] = calc_e1e2(normalList);
 [vList, vHoriList] = calc_Vel(pointList, w, radius);
-
-
+[phi] = calc_Phi(vHoriList, e2List);
 
 
 tic
 
+[v1List, v23List] = calc_v1v23(vList,e1List);
 
 
-% idxV = (vHoriList(1,:)==0 & vHoriList(2,:)==0);
-% vHoriList(2,:) = 1.*idxV+vHoriList(2,:).*(~idxV);
-
-phi = calc_Angles(vHoriList, e2List);
-phi = wrapToPi(phi);
-
-v1List = dot(vList,e1List)./1.*e1List;
-v23List = vList-v1List;
 % add pi/2
 nAngleList = atan2(normalList(3,:),sqrt(normalList(2,:).^2+normalList(1,:).^2));
 
-betaList = calc_Angles(normalList, e2List);
-idxBeta = normalList(3,:)<0;
-betaList(idxBeta) = -betaList(idxBeta);
-betaList = betaList+pi/2;
-betaList = wrapToPi(betaList);
-
-gammaList = calc_Angles(v23List, e2List);
-% idxGamma = v23List(3,:)>0;
-% gammaList(idxGamma) = -gammaList(idxGamma);
-gammaList = wrapToPi(gammaList);
+[betaList, gammaList] = calc_BetaGamma(normalList,e2List,v23List);
 
 % find which points are below the surface
 % sand with respect to the center of the wheel mm
@@ -84,14 +67,14 @@ forcee2 = e2List(:,idx);
 forceArea = areaList(idx);
 %mm
 forceDepth = abs(depth-forcePoints(3,:));
-[ay1,az1] = calc_alpha(0,0);
+[ay1,az1] = rft_alpha(0,0);
 ax23  = zeros(1,numofForce);
 az23 = zeros(1,numofForce);
 
 ay1 = zeros(1,numofForce)+ay1;
 
 for i = 1:numofForce
-    [ax23(i),az23(i)] = calc_alpha(forceBeta(i),forceGamma(i));
+    [ax23(i),az23(i)] = rft_alpha(forceBeta(i),forceGamma(i));
 end
 
 magF1 = ay1.*forceDepth.*forceArea*10^-3;
@@ -209,7 +192,7 @@ daspect([1 1 1])
 
 % find the local alphax and alphaz with give gamma and beta
 % return alpha in N/(cm^3)
-function [alphaX, alphaZ] = calc_alpha(beta,gamma)
+function [alphaX, alphaZ] = rft_alpha(beta,gamma)
     % using discrete Fourier transform fitting function [Li et al., 2013]
     % beta [-pi,pi]
     % gamma [-pi,pi]
@@ -323,8 +306,6 @@ function [vList, vHoriList] = calc_Vel(pointList, w, radius)
     % element tangent angle (1*n)
     angleList = atan2(pointList(3,:),pointList(2,:))+pi/2;
 
-    % angular speed mm/s
-    % the velocity of the center of the wheel mm/s
     vcorx = 0;
     vcory = radius*2;
     vcorz = 0;
@@ -335,8 +316,35 @@ function [vList, vHoriList] = calc_Vel(pointList, w, radius)
     vList = [vx;vy;vz];
 
     vHoriList = [vx;vy;zeros(1,size(angleList,2))];
+    
+    % idxV = (vHoriList(1,:)==0 & vHoriList(2,:)==0);
+    % vHoriList(2,:) = 1.*idxV+vHoriList(2,:).*(~idxV);
+
 end
 
+function [v1List, v23List] = calc_v1v23(vList,e1List)
+    v1List = dot(vList,e1List)./1.*e1List;
+    v23List = vList-v1List;
+end
+
+function [phi] = calc_Phi(vHoriList, e2List)
+    phi = calc_Angles(vHoriList, e2List);
+    phi = wrapToPi(phi);
+end
+
+function [betaList, gammaList] = calc_BetaGamma(normalList,e2List,v23List)
+    betaList = calc_Angles(normalList, e2List);
+    idxBeta = normalList(3,:)<0;
+    betaList(idxBeta) = -betaList(idxBeta);
+    betaList = betaList+pi/2;
+    betaList = wrapToPi(betaList);
+
+    gammaList = calc_Angles(v23List, e2List);
+    % idxGamma = v23List(3,:)>0;
+    % gammaList(idxGamma) = -gammaList(idxGamma);
+    gammaList = wrapToPi(gammaList);
+    
+end
 % function c = cross_dim1(a,b)
 % % c = cross_dim1(a,b)
 % % Calculate cross product along the first dimension
