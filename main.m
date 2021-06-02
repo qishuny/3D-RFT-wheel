@@ -31,7 +31,10 @@ pointSize = size(pointList,2);
 [phi] = calc_Phi(vHoriList, e2List);
 
 %% Plot stuff
-
+% plot velocity
+figure   
+quiver3(pointList(1,:),pointList(2,:),pointList(3,:),vList(1,:),vList(2,:),vList(3,:),2,'Color', [0,0.2,0.8]);
+daspect([1 1 1])
 %Plot selected normal vector and e1,e2
 % figure
 % for k =1:200:size(pointList,2)
