@@ -1,7 +1,7 @@
 %% 3D RFT Modeling
 % Qishun Yu Catherine Pavlov
 % 02/21/2021
-close all
+
 
 %% Geometry & Velocity Calc
 
@@ -9,15 +9,15 @@ close all
 % area (1*n) data.Area
 % normal vectors (3*n) data.Normals
 
-data = matfile('data/smooth_wheel_125.mat');
-% data = matfile('data/wheel_106.mat');
+% data = matfile('data/smooth_wheel_125.mat');
+data = matfile('data/wheel_106.mat');
 % data = matfile('data/plate.mat');
 
 
 % SET angular speed mm/s
 % SET radius of the wheel mm
-w = -2;
-radius = 62.5;
+w = -0.2*pi;
+radius = 53;
 
 pointList = data.Points;
 areaList = data.Area;
@@ -54,7 +54,7 @@ tic
 
 % find which points are below the surface
 % sand with respect to the center of the wheel mm
-depth = -30;
+depth = -20;
 
 idx = pointList(3,:)<depth;
 

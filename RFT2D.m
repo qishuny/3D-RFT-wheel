@@ -1,9 +1,4 @@
 
-function RFTmodeling
-clear all
-close all
-clc
-
 %% RFT Modeling
 % Qishun Yu
 % 09/26/2020
@@ -13,11 +8,11 @@ clc
 %% EXAMPLE START
 
 % file_name = 'smooth_wheel_150.DXF';
-
-file_name = 'Rover_wheel_printable_straight.DXF';
-pos = read_dxf(file_name);
-pos = pos./10;
-% pos = makecircle(35);
+% 
+% file_name = 'Rover_wheel_printable_straight.DXF';
+% pos = read_dxf(file_name);
+% pos = pos./10;
+pos = makecircle(35);
 [beta,area] = initialize_beta(pos);
 
 % plot_alphaMap()
@@ -32,12 +27,8 @@ depth = - 2.0;
 rho = 4; %????
 center = [0,0];
 
-dt = 0;
-theta = -dt*w;  % Clockwize
-xt = w*rho*dt;
-            
-zt = 0;
-[pos,center,beta] = rotate_update(pos,center,beta,theta,xt,zt);
+
+
 [ForceX,ForceZ,pos_net,beta_net,area_net,alphaX_net,alphaZ_net] = netforce(depth,pos,beta,area,center);
 
 ForceZ
@@ -74,8 +65,10 @@ pause(0.1)
                 depth_net = [depth_net;abs(pos_points(i,2)-depth)];
             end
         end
+        w = 0.2*pi;
+        
         vel_net = vel_func(pos_net,w,center);
-        size(pos_net)
+   
         
         figure 
         quiver(pos_net(:,1),pos_net(:,2),vel_net(:,1),vel_net(:,2))
@@ -381,4 +374,3 @@ pause(0.1)
 %         quiver(pos_points(:,1),pos_points(:,2),vel_points(:,1),vel_points(:,2),'r')
         axis equal
     end
-end

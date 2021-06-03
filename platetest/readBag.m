@@ -50,6 +50,7 @@ zeroP5 = positionData5(2101,3);
 depth5 = positionData5(2101:3361,3)-zeroP5;
 depth5 = -depth5.*100;
 
+%% Plot
 figure
 plot(depth1,force1)
 hold on
@@ -81,9 +82,9 @@ s4 = (force4./plateA)./depth4;
 s5 = (force5./plateA)./depth5;
 plot(depth1(100:end),s1(100:end))
 hold on
-plot(depth2(300:end),s2(300:end))
+plot(depth2(200:end),s2(200:end))
 plot(depth3(100:end),s3(100:end))
-plot(depth4(300:end),s4(300:end))
+plot(depth4(200:end),s4(200:end))
 plot(depth5(100:end),s5(100:end))
 legend('trial 1','trial 2','trial 3','trial 4','trial 5');
 xlabel('depth cm')
