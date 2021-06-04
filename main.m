@@ -9,15 +9,29 @@
 % area (1*n) data.Area
 % normal vectors (3*n) data.Normals
 
-% data = matfile('data/smooth_wheel_125.mat');
-data = matfile('data/wheel_106.mat');
+data = matfile('data/smooth_wheel_125.mat');
+% data = matfile('data/wheel_106.mat');
 % data = matfile('data/plate.mat');
 
 
-% SET angular speed mm/s
-% SET radius of the wheel mm
-w = -0.2*pi;
-radius = 53;
+radius = 62.5;
+
+% SET velocity of the center of rotation of the body mm/s
+vcorx = 0;
+vcory = 10;
+vcorz = 0;
+vcor = [vcorx;vcory;vcorz];
+% SET wheel rotational speed mm/s
+wr = 100;
+% angular velocity radius/s
+w = -wr/radius;
+
+% SET sinkage mm
+sinkage = 25;
+
+% find which points are below the surface
+% sand with respect to the center of the wheel mm
+depth = -radius+sinkage;
 
 pointList = data.Points;
 areaList = data.Area;
@@ -26,35 +40,18 @@ normalList = data.Normals;
 pointSize = size(pointList,2);
 
 [e1List, e2List] = calc_e1e2(normalList);
-[vList, vHoriList,v1List, v23List] = calc_Vel(pointList, w, radius,e1List);
+[vList, vHoriList,v1List, v23List] = calc_Vel(pointList, w, radius,e1List,vcor);
 
 [phi] = calc_Phi(vHoriList, e2List);
 
-%% Plot stuff
-% plot velocity
-figure   
-quiver3(pointList(1,:),pointList(2,:),pointList(3,:),vList(1,:),vList(2,:),vList(3,:),2,'Color', [0,0.2,0.8]);
-daspect([1 1 1])
-%Plot selected normal vector and e1,e2
-% figure
-% for k =1:200:size(pointList,2)
-%     plot3(pointList(1,k),pointList(2,k),pointList(3,k),'ok','MarkerFaceColor',[0,0.5,0.5])
-%     hold on 
-%     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),normalList(1,k),normalList(2,k),normalList(3,k),10,'Color', [0,0.2,0.8]);  
-%     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e1List(1,k),e1List(2,k),e1List(3,k),10,'r');
-%     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e2List(1,k),e2List(2,k),e2List(3,k),10,'g');
-%     legend('point','normal vector','e1 axis','e2 axis')
-%     daspect([1 1 1])
-% end
+
 
 %% Force Calc
 tic
 
 [betaList, gammaList] = calc_BetaGamma(normalList,e2List,v23List);
 
-% find which points are below the surface
-% sand with respect to the center of the wheel mm
-depth = -20;
+
 
 idx = pointList(3,:)<depth;
 
@@ -109,27 +106,46 @@ netForce = f1List.*F1tilde+f2List.*F2tilde;
 Force = sum(netForce,2)
 toc
 
-%% Plot other stuff
+%% Plot stuff
 
-figure
-for k =1:200:size(pointList,2)  
-    quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e2List(1,k),e2List(2,k),e2List(3,k),10,'g');
-    hold on
-    quiver3(pointList(1,k),pointList(2,k),pointList(3,k),v23List(1,k),v23List(2,k),v23List(3,k),0.1,'r');
-    legend('e2','v23')
-    text(pointList(1,k),pointList(2,k),pointList(3,k),string(gammaList(k)*180/pi))
-    daspect([1 1 1])
-end
+% plot velocity
+figure   
+quiver3(pointList(1,:),pointList(2,:),pointList(3,:),vList(1,:),vList(2,:),vList(3,:),2,'Color', [0,0.2,0.8]);
+daspect([1 1 1])
+% 
+% figure
+% for k =1:200:size(pointList,2)  
+%     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e2List(1,k),e2List(2,k),e2List(3,k),10,'g');
+%     hold on
+%     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),v23List(1,k),v23List(2,k),v23List(3,k),0.1,'r');
+%     legend('e2','v23')
+%     text(pointList(1,k),pointList(2,k),pointList(3,k),string(gammaList(k)*180/pi))
+%     daspect([1 1 1])
+% end
+% 
+% figure
+% for k =1:200:size(pointList,2)  
+%     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e2List(1,k),e2List(2,k),e2List(3,k),10,'g');
+%     hold on
+%     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),normalList(1,k),normalList(2,k),normalList(3,k),10,'r');
+%     legend('e2','normal')
+%     text(pointList(1,k),pointList(2,k),pointList(3,k),string(betaList(k)*180/pi))
+%     daspect([1 1 1])
+% end
 
-figure
-for k =1:200:size(pointList,2)  
-    quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e2List(1,k),e2List(2,k),e2List(3,k),10,'g');
-    hold on
-    quiver3(pointList(1,k),pointList(2,k),pointList(3,k),normalList(1,k),normalList(2,k),normalList(3,k),10,'r');
-    legend('e2','normal')
-    text(pointList(1,k),pointList(2,k),pointList(3,k),string(betaList(k)*180/pi))
-    daspect([1 1 1])
-end
+%Plot selected normal vector and e1,e2
+
+% figure
+% for k =1:200:size(pointList,2)
+%     plot3(pointList(1,k),pointList(2,k),pointList(3,k),'ok','MarkerFaceColor',[0,0.5,0.5])
+%     hold on 
+%     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),normalList(1,k),normalList(2,k),normalList(3,k),10,'Color', [0,0.2,0.8]);  
+%     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e1List(1,k),e1List(2,k),e1List(3,k),10,'r');
+%     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e2List(1,k),e2List(2,k),e2List(3,k),10,'g');
+%     legend('point','normal vector','e1 axis','e2 axis')
+%     daspect([1 1 1])
+% end
+
 
 % figure
 % plot3(forcePoints(1,:),forcePoints(2,:),forcePoints(3,:),'ok','MarkerFaceColor',[0.5,0.0,0.5])
@@ -226,13 +242,15 @@ function [alphaX, alphaZ] = rft_alpha(beta,gamma)
     M = [A00, A10, B11, B01, BM11, C11, C01, CM11, D10];
     % scaling factor
     sf = 1;
-
+    beta = wrapToPi(beta);
+    gamma = wrapToPi(gamma);
     if beta >= -pi && beta <= -pi/2
         beta = beta + pi;
     elseif beta >= pi/2 && beta <= pi
         beta = beta - pi;
     end
-
+    beta = wrapToPi(beta);
+    gamma = wrapToPi(gamma);
     if gamma >= -pi && gamma <= -pi/2
         alphaZ = sf*(M(1)*cos(0)+M(2)*cos(2*(-beta))+M(3)*sin(2*(-beta)+(-pi-gamma))...
             +M(4)*sin((-pi-gamma))+M(5)*sin((-2*(-beta))+(-pi-gamma)));
@@ -314,19 +332,16 @@ function [e1List, e2List] = calc_e1e2(normalList)
 
 end
 
-function [vList, vHoriList, v1List, v23List] = calc_Vel(pointList, w, radius,e1List)
+function [vList, vHoriList, v1List, v23List] = calc_Vel(pointList, w, radius,e1List,vcor)
     % element radius to the center information (1*n)
     rList = sqrt(pointList(2,:).^2+pointList(3,:).^2);
 
     % element tangent angle (1*n)
     angleList = atan2(pointList(3,:),pointList(2,:))+pi/2;
-
-    vcorx = 0;
-    vcory = radius*2;
-    vcorz = 0;
-    vx = zeros([1,size(angleList,2)])+vcorx;
-    vy = cos(angleList).*rList.*w+vcory;
-    vz = sin(angleList).*rList.*w+vcorz;
+    
+    vx = zeros([1,size(angleList,2)])+vcor(1);
+    vy = cos(angleList).*rList.*w+vcor(2);
+    vz = sin(angleList).*rList.*w+vcor(3);
 
     vList = [vx;vy;vz];
 
