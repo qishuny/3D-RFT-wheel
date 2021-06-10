@@ -27,6 +27,8 @@ wr = 100;
 w = -wr/radius;
 
 % SET sinkage mm
+
+%singkage data 12, 21, 32, 412,
 sinkage = 25;
 
 % find which points are below the surface
