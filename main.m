@@ -62,10 +62,10 @@ F23 = zeros(1, numofForce);
 forceBeta = betaList(idx);
 forceGamma = gammaList(idx);
 
-% forceV1 = v1List(:,idx);
-% forceV23 = v23List(:,idx);
-% forceV = vList(:,idx);
-% forceVHori = vHoriList(:,idx);
+forceV1 = v1List(:,idx);
+forceV23 = v23List(:,idx);
+forceV = vList(:,idx);
+forceVHori = vHoriList(:,idx);
 
 
 [ay1,az1] = rft_alpha(0,0);
