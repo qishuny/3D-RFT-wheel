@@ -26,7 +26,7 @@ w = -wr / radius;
 % SET sinkage mm
 
 %singkage data 12, 21, 32, 412,
-sinkage = 25;
+sinkage = 14;
 
 % find which points are below the surface
 % sand with respect to the center of the wheel mm
@@ -202,10 +202,10 @@ toc
 
 
 % plot force
-% figure
-% quiver3(forcePoints(1,:),forcePoints(2,:),forcePoints(3,:),netForce(1,:),netForce(2,:),netForce(3,:),2,'Color', [0,0.2,0.8]);
-% legend('force')
-% 
+figure
+quiver3(forcePoints(1,:),forcePoints(2,:),forcePoints(3,:),netForce(1,:),netForce(2,:),netForce(3,:),2,'Color', [0,0.2,0.8]);
+legend('force')
+
 % daspect([1 1 1])
 %
 
