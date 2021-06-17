@@ -7,7 +7,7 @@
 % normal vectors (3*n) data.Normals
 
 data = matfile('data/smooth_wheel_125.mat');
-% data = matfile('data/wheel_106.mat');
+% data = matfile(data/wheel_106.mat');
 % data = matfile('data/plate.mat');
 
 
@@ -19,7 +19,7 @@ vcory = 10;
 vcorz = 0;
 vcor = [vcorx; vcory; vcorz];
 % SET wheel rotational speed mm/s
-wr = 100;
+wr = 10;
 % angular velocity radius/s
 w = -wr / radius;
 
@@ -107,9 +107,9 @@ toc
 %% Plot stuff
 
 % plot velocity
-% figure
-% quiver3(pointList(1,:),pointList(2,:),pointList(3,:),vList(1,:),vList(2,:),vList(3,:),2,'Color', [0,0.2,0.8]);
-% daspect([1 1 1])
+figure
+quiver3(pointList(1,:),pointList(2,:),pointList(3,:),vList(1,:),vList(2,:),vList(3,:),2,'Color', [0,0.2,0.8]);
+daspect([1 1 1])
 
 
 %
@@ -198,6 +198,15 @@ toc
 %     quiver3(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),forceV23(1,k),forceV23(2,k),forceV23(3,k),0.05,'Color', [0,0.2,0.8]);
 % end
 % daspect([1 1 1])
+
+% plot alphaz
+figure
+for k = 1 : 25 : size(forcePoints, 2)
+    plot3(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),'ok','MarkerFaceColor',[0,0.5,0.5])
+    hold on 
+    text(forcePoints(1, k),forcePoints(2, k),forcePoints(3, k),string(az23(1, k)));
+end
+daspect([1 1 1]);
 
 
 
