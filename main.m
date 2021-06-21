@@ -14,12 +14,12 @@ data = matfile('data/smooth_wheel_125.mat');
 radius = 62.5;
 
 % SET velocity of the center of rotation of the body mm/s
-vcorx = -10;
+vcorx = 0;
 vcory = 10;
 vcorz = 0;
 vcor = [vcorx; vcory; vcorz];
 % SET wheel rotational speed mm/s
-wr = 0.001;
+wr = 10;
 % angular velocity radius/s
 w = -wr / radius;
 
@@ -40,8 +40,10 @@ pointSize = size(pointList, 2);
 
 
 %% Geometry & Velocity Calc
-[e1List, e2List] = calc_e1e2(normalList);
-[vList, vHoriList, v1List, v23List] = calc_Vel(pointList, w, radius, e1List, vcor);
+% [e1List, e2List] = calc_e1e2(normalList);
+% [vList, vHoriList, v1List, v23List] = calc_Vel(pointList, w, radius, e1List, vcor);
+
+[e1List, e2List, vList, vHoriList, v1List, v23List] = calc_velocity(normalList, pointList, w, vcor);
 [phi] = calc_Phi(vHoriList, e2List);
 
 
@@ -82,7 +84,7 @@ end
 % magF1 = ay1.*forceDepth.*forceArea*10^-3;
 % magF2 = -ax23.*forceDepth.*forceArea*10^-3;
 
-magF1 = ay1.*abs(depth-pointList(3,idx)).*(areaList(idx)*10^-3);
+magF1 = -ay1.*abs(depth-pointList(3,idx)).*(areaList(idx)*10^-3);
 magF2 = -ax23.*abs(depth-pointList(3,idx)).*(areaList(idx)*10^-3);
 % F1 force in N
 F1tilde = magF1.*e1List(:,idx);
@@ -102,15 +104,25 @@ netForce = f1List.*F1tilde+f2List.*F2tilde;
 Force = sum(netForce,2)
 
 
+% figure
+% for k =1:150:size(forcePoints,2)
+% 
+%     quiver3(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),forceNormals(1,k),forceNormals(2,k),forceNormals(3,k),'Color', [0,0.2,0.8]);
+%     hold on
+%     quiver3(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),forcee2(1,k),forcee2(2,k),forcee2(3,k),1,'r');
+%     text(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),string(forceBeta(k)*180/pi))
+%     legend('normal','e2')
+% end
+% daspect([1 1 1])
 
 toc
 
 %% Plot stuff
 
 % plot velocity
-figure
-quiver3(pointList(1,:),pointList(2,:),pointList(3,:),vList(1,:),vList(2,:),vList(3,:),2,'Color', [0,0.2,0.8]);
-daspect([1 1 1])
+% figure
+% quiver3(pointList(1,:),pointList(2,:),pointList(3,:),vList(1,:),vList(2,:),vList(3,:),2,'Color', [0,0.2,0.8]);
+% daspect([1 1 1])
 
 
 %
@@ -137,15 +149,15 @@ daspect([1 1 1])
 %Plot selected normal vector and e1,e2
 
 % figure
-for k =1:200:size(pointList,2)
-    plot3(pointList(1,k),pointList(2,k),pointList(3,k),'ok','MarkerFaceColor',[0,0.5,0.5])
-    hold on
-    quiver3(pointList(1,k),pointList(2,k),pointList(3,k),normalList(1,k),normalList(2,k),normalList(3,k),10,'Color', [0,0.2,0.8]);
-    quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e1List(1,k),e1List(2,k),e1List(3,k),10,'r');
-    quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e2List(1,k),e2List(2,k),e2List(3,k),10,'g');
-    legend('point','normal vector','e1 axis','e2 axis')
-    daspect([1 1 1])
-end
+% for k =1:200:size(pointList,2)
+%     plot3(pointList(1,k),pointList(2,k),pointList(3,k),'ok','MarkerFaceColor',[0,0.5,0.5])
+%     hold on
+%     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),normalList(1,k),normalList(2,k),normalList(3,k),10,'Color', [0,0.2,0.8]);
+%     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e1List(1,k),e1List(2,k),e1List(3,k),10,'r');
+%     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e2List(1,k),e2List(2,k),e2List(3,k),10,'g');
+%     legend('point','normal vector','e1 axis','e2 axis')
+%     daspect([1 1 1])
+% end
 
 
 % figure
@@ -159,42 +171,43 @@ end
 % daspect([1 1 1])
 
 % plot velocity
-figure
-for k =1:150:size(forcePoints,2)
+% figure
+% for k =1:150:size(forcePoints,2)
+% 
+%     quiver3(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),forceV1(1,k),forceV1(2,k),forceV1(3,k),0.5,'Color', [0,0.2,0.8]);
+%     hold on
+%     quiver3(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),forcee1(1,k),forcee1(2,k),forcee1(3,k),1,'r');
+%     text(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),string(forceGamma(k)*180/pi))
+%     legend('V1','e1')
+% 
+% end
+% daspect([1 1 1])
 
-    quiver3(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),forceV1(1,k),forceV1(2,k),forceV1(3,k),0.5,'Color', [0,0.2,0.8]);
-    hold on
-    quiver3(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),forcee1(1,k),forcee1(2,k),forcee1(3,k),1,'r');
-    text(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),string(forceGamma(k)*180/pi))
-    legend('V1','e1')
 
-end
-daspect([1 1 1])
 %Plot velocity and v1 v23
+% figure
+% for k =1:150:size(forcePoints,2)
+% 
+%     quiver3(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),forceV23(1,k),forceV23(2,k),forceV23(3,k),0.5,'Color', [0,0.2,0.8]);
+%     hold on
+%     quiver3(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),forcee2(1,k),forcee2(2,k),forcee2(3,k),1,'r');
+%     text(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),string(forceGamma(k)*180/pi))
+%     legend('V23','e2')
+% 
+% end
+% daspect([1 1 1])
 
-figure
-for k =1:150:size(forcePoints,2)
 
-    quiver3(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),forceV23(1,k),forceV23(2,k),forceV23(3,k),0.5,'Color', [0,0.2,0.8]);
-    hold on
-    quiver3(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),forcee2(1,k),forcee2(2,k),forcee2(3,k),1,'r');
-    text(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),string(forceGamma(k)*180/pi))
-    legend('V23','e2')
-
-end
-daspect([1 1 1])
-
-
-figure
-for k =1:150:size(forcePoints,2)
-
-    quiver3(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),forceNormals(1,k),forceNormals(2,k),forceNormals(3,k),'Color', [0,0.2,0.8]);
-    hold on
-    quiver3(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),forcee2(1,k),forcee2(2,k),forcee2(3,k),1,'r');
-    text(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),string(forceBeta(k)*180/pi))
-    legend('normal','e2')
-end
-daspect([1 1 1])
+% figure
+% for k =1:150:size(forcePoints,2)
+% 
+%     quiver3(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),forceNormals(1,k),forceNormals(2,k),forceNormals(3,k),'Color', [0,0.2,0.8]);
+%     hold on
+%     quiver3(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),forcee2(1,k),forcee2(2,k),forcee2(3,k),1,'r');
+%     text(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),string(forceBeta(k)*180/pi))
+%     legend('normal','e2')
+% end
+% daspect([1 1 1])
 
 
 
@@ -331,25 +344,95 @@ timeprd = sqrt(v1(1,:).^2+v1(2,:).^2+v1(3,:).^2).*sqrt(v2(1,:).^2+v2(2,:).^2+v2(
 angles = acos((dotprd)./(timeprd));
 end
 
-function [e1List, e2List] = calc_e1e2(normalList)
-numofNormal = size(normalList,2);
-%e2 unit axis
-e2List = [normalList(1,:);
-    normalList(2,:);
-    zeros(1,numofNormal)];
-idxe2 = (e2List(1,:)==0 & e2List(2,:)==0);
-e2List(2,:) = 1.*idxe2+e2List(2,:).*(~idxe2);
 
-magne2 = sqrt(e2List(1,:).^2+e2List(2,:).^2+e2List(3,:).^2);
-e2List = [e2List(1,:)./magne2;
-    e2List(2,:)./magne2;
-    e2List(3,:)./magne2;];
+function [e1List, e2List, vList, vHoriList, v1List, v23List] = calc_velocity(normalList, pointList, w, vcor)
+numofNormal = size(normalList, 2);
+%e2 unit axis
+e2List = [normalList(1, :);
+    normalList(2, :);
+    zeros(1, numofNormal)];
+idxe2 = (e2List(1, :) == 0 & e2List(2, :) == 0);
+e2List(2,:) = 1 .* idxe2 + e2List(2,:) .* (~idxe2);
+magne2 = sqrt(e2List(1, :) .^2 + e2List(2, :) .^2 + e2List(3, :) .^2);
+e2List = [e2List(1, :) ./ magne2;
+    e2List(2, :) ./ magne2;
+    e2List(3, :) ./ magne2;];
+
+% element radius to the center information (1*n)
+rList = sqrt(pointList(2,:).^2+pointList(3,:).^2);
+    
+angleList = atan2(pointList(3, :), pointList(2, :)) + pi/2;
+
+vx = zeros([1, size(angleList, 2)]) + vcor(1);
+vy = cos(angleList) .* rList .* w + vcor(2);
+vz = sin(angleList) .* rList .* w + vcor(3);
+
+vList = [vx; 
+    vy; 
+    vz];
+
+vHoriList = [vx; vy; zeros(1, size(angleList, 2))];
+idxV = (vHoriList(1, :) == 0 & vHoriList(2, :) == 0);
+vHoriList(2, :) = 1 .* idxV + vHoriList(2, :) .* (~idxV);
+
+vHorie2List = dot(vList, e2List) ./ 1 .* e2List;
+
+e1List = vHoriList - vHorie2List;
+magne1 = sqrt(e1List(1, :) .^2 + e1List(2, :) .^2 + e1List(3, :) .^2);
+e1List = [e1List(1, :) ./ magne1;
+    e1List(2, :) ./ magne1;
+    e1List(3, :) ./ magne1;];
+
+
+v1List = dot(vList, e1List) ./ 1 .* e1List;
+v23List = vList - v1List;
+
+end
+
+
+
+
+function [phi] = calc_Phi(vHoriList, e2List)
+phi = calc_Angles(vHoriList, e2List);
+phi = wrapToPi(phi);
+end
+
+function [betaList, gammaList] = calc_BetaGamma(normalList,e2List,v23List)
+betaList = calc_Angles(normalList, e2List);
+idxBeta = normalList(3,:)<0;
+betaList(idxBeta) = -betaList(idxBeta);
+betaList = betaList+pi/2;
+betaList = wrapToPi(betaList);
+
+gammaList = calc_Angles(v23List, e2List);
+idxGamma = v23List(3,:)>0;
+gammaList(idxGamma) = -gammaList(idxGamma);
+gammaList = wrapToPi(gammaList);
+
+end
+
+
+function [e1List, e2List] = calc_e1e2(normalList)
+numofNormal = size(normalList, 2);
+%e2 unit axis
+e2List = [normalList(1, :);
+    normalList(2, :);
+    zeros(1, numofNormal)];
+idxe2 = (e2List(1, :) == 0 & e2List(2, :) == 0);
+e2List(2,:) = 1 .* idxe2 + e2List(2,:) .* (~idxe2);
+
+magne2 = sqrt(e2List(1, :) .^2 + e2List(2, :) .^2 + e2List(3, :) .^2);
+e2List = [e2List(1, :) ./ magne2;
+    e2List(2, :) ./ magne2;
+    e2List(3, :) ./ magne2;];
 %e1 unit axis
 e1List = [e2List(1,:).*cos(-pi/2)+e2List(2,:).*-sin(-pi/2);
     e2List(1,:).*sin(-pi/2)+e2List(2,:).*cos(-pi/2);
     e2List(3,:)];
 
 end
+
+%UNUSED FUNCTIONS
 
 function [vList, vHoriList, v1List, v23List] = calc_Vel(pointList, w, radius,e1List,vcor)
 % element radius to the center information (1*n)
@@ -370,23 +453,4 @@ idxV = (vHoriList(1,:)==0 & vHoriList(2,:)==0);
 vHoriList(2,:) = 1.*idxV+vHoriList(2,:).*(~idxV);
 v1List = dot(vList,e1List)./1.*e1List;
 v23List = vList-v1List;
-end
-
-function [phi] = calc_Phi(vHoriList, e2List)
-phi = calc_Angles(vHoriList, e2List);
-phi = wrapToPi(phi);
-end
-
-function [betaList, gammaList] = calc_BetaGamma(normalList,e2List,v23List)
-betaList = calc_Angles(normalList, e2List);
-idxBeta = normalList(3,:)<0;
-betaList(idxBeta) = -betaList(idxBeta);
-betaList = betaList+pi/2;
-betaList = wrapToPi(betaList);
-
-gammaList = calc_Angles(v23List, e2List);
-idxGamma = v23List(3,:)>0;
-gammaList(idxGamma) = -gammaList(idxGamma);
-gammaList = wrapToPi(gammaList);
-
 end
