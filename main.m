@@ -5,7 +5,7 @@
 % points (3*n) data.Points
 % area (1*n) data.Area
 % normal vectors (3*n) data.Normals
-
+load('all_smooth_data_2.mat')
 data = matfile('data/smooth_wheel_125.mat');
 % data = matfile(data/wheel_106.mat');
 % data = matfile('data/plate.mat');
@@ -18,7 +18,7 @@ pointSize = size(pointList, 2);
 
 %% SET parameters
 % SET slip angle
-slipAngle = pi/4;
+slipAngle = pi/2;
 % SET velocity of the center of rotation of the body mm/s
 vcenter = 10;
 % SET wheel rotational speed mm/s
@@ -30,6 +30,8 @@ radius = 62.5;
 % SET scaling factor
 sf = 1;
 
+
+% runData(all_results, pointList, normalList, areaList, pointSize, vcenter, radius, sf)
 %% Geometry & Velocity Calc
 
 % angular velocity radius/s
@@ -49,10 +51,24 @@ depth = -radius + sinkage;
 %% Force Calc
 [betaList, gammaList] = calc_BetaGamma(normalList, e2List, v23List);
 [Force,netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, depth, sf);
-Force
 
+% transfer force in wheel frame to global frame
+ForceX = Force(1) * cos(slipAngle) - Force(2) * sin(slipAngle)
+ForceY = -Force(1) * sin(slipAngle) + Force(2) * cos(slipAngle)
+ForceZ = Force(3)
 
 %% Plot stuff
+
+% plot force
+figure
+quiver3(pointList(1, idx),pointList(2, idx),pointList(3, idx),netForce(1,:),netForce(2,:),netForce(3,:),2,'Color', [0,0.2,0.8]);
+legend('force')
+hold on 
+quiver3(zeros(3,1),zeros(3,1),zeros(3,1),[10;0;0],[0;10;0],[0;0;10]);
+legend('unit vector')
+daspect([1 1 1])
+
+
 
 % plot velocity
 % figure
@@ -97,16 +113,16 @@ Force
 
 %Plot selected velocity and v1,v23
 
-figure
-for k =1:200:size(pointList,2)
-    
-    quiver3(pointList(1,k),pointList(2,k),pointList(3,k),vList(1,k),vList(2,k),vList(3,k),1,'Color', [0,0.2,0.8]);
-    hold on
-    quiver3(pointList(1,k),pointList(2,k),pointList(3,k),v1List(1,k),v1List(2,k),v1List(3,k),1,'r');
-    quiver3(pointList(1,k),pointList(2,k),pointList(3,k),v23List(1,k),v23List(2,k),v23List(3,k),1,'g');
-    legend('velocity','v1','v23')
-    daspect([1 1 1])
-end
+% figure
+% for k =1:200:size(pointList,2)
+%     
+%     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),vList(1,k),vList(2,k),vList(3,k),1,'Color', [0,0.2,0.8]);
+%     hold on
+%     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),v1List(1,k),v1List(2,k),v1List(3,k),1,'r');
+%     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),v23List(1,k),v23List(2,k),v23List(3,k),1,'g');
+%     legend('velocity','v1','v23')
+%     daspect([1 1 1])
+% end
 
 
 
@@ -175,15 +191,6 @@ end
 
 
 
-% plot force
-figure
-quiver3(pointList(1, idx),pointList(2, idx),pointList(3, idx),netForce(1,:),netForce(2,:),netForce(3,:),2,'Color', [0,0.2,0.8]);
-legend('force')
-hold on 
-quiver3(zeros(3,1),zeros(3,1),zeros(3,1),[10;0;0],[0;10;0],[0;0;10]);
-legend('unit vector')
-daspect([1 1 1])
-%
 
 % figure
 % for k =1:150:size(pointList,2)
@@ -196,6 +203,45 @@ daspect([1 1 1])
 % daspect([1 1 1])
 
 %% Functions
+
+function runData(all_results, pointList, normalList, areaList, pointSize, vcenter, radius, sf)
+for i=1:length(all_results)
+    result = all_results(i);
+    wr = result.Vry;
+    if wr == 0
+        wr = 0.00001;
+    end  
+    sinkage = abs(result.avg_Z);
+    slipAngle = result.beta * pi / 180;
+    % angular velocity radius/s
+    vcorx = -vcenter * sin(slipAngle);
+    vcory = vcenter * cos(slipAngle);
+    vcorz = 0;
+    vcor = [vcorx; vcory; vcorz];
+    w = -wr / radius;
+    
+    
+
+    % depth = sand with respect to the center of the wheel mm
+    depth = -radius + sinkage;
+
+    [e1List, e2List, vList, vHoriList, v1List, v23List] = calc_velocity(normalList, pointList, w, vcor);
+    [phi] = calc_Phi(vHoriList, e2List);
+    %% Force Calc
+    [betaList, gammaList] = calc_BetaGamma(normalList, e2List, v23List);
+    [Force,netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, depth, sf);
+
+    % transfer force in wheel frame to global frame
+    ForceX = Force(1) * cos(slipAngle) - Force(2) * sin(slipAngle);
+    ForceY = -Force(1) * sin(slipAngle) + Force(2) * cos(slipAngle);
+    ForceZ = Force(3);
+
+    RFToutput(i) = struct('ForceX', ForceX, 'ForceY', ForceY, 'ForceZ', ForceZ, 'wr', result.Vry, 'depth', result.avg_Z, 'beta', result.beta, 'slip', result.slip); 
+    i
+end
+save('RFToutput.mat','RFToutput');
+
+end
 
 function [Force,netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, depth, sf);
 
