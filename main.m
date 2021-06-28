@@ -18,11 +18,11 @@ pointSize = size(pointList, 2);
 
 %% SET parameters
 % SET slip angle
-slipAngle = pi/2;
+slipAngle = pi/4;
 % SET velocity of the center of rotation of the body mm/s
 vcenter = 10;
 % SET wheel rotational speed mm/s
-wr = 10;
+wr = 0.001;
 % SET sinkage mm
 sinkage = 40;
 % SET radius
@@ -31,31 +31,24 @@ radius = 62.5;
 sf = 1;
 
 
-% runData(all_results, pointList, normalList, areaList, pointSize, vcenter, radius, sf)
+
 %% Geometry & Velocity Calc
-
-% angular velocity radius/s
-vcorx = -vcenter * sin(slipAngle);
-vcory = vcenter * cos(slipAngle);
-vcorz = 0;
-vcor = [vcorx; vcory; vcorz];
-w = -wr / radius;
-
-% depth = sand with respect to the center of the wheel mm
-depth = -radius + sinkage;
-
-[e1List, e2List, vList, vHoriList, v1List, v23List] = calc_velocity(normalList, pointList, w, vcor);
-[phi] = calc_Phi(vHoriList, e2List);
-
+[e1List, e2List, vList, vHoriList, v1List, v23List, phi] = calc_velocity(normalList, pointList, wr, vcenter, radius, slipAngle);
 
 %% Force Calc
 [betaList, gammaList] = calc_BetaGamma(normalList, e2List, v23List);
-[Force,netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, depth, sf);
+[Force, netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
 
 % transfer force in wheel frame to global frame
-ForceX = Force(1) * cos(slipAngle) - Force(2) * sin(slipAngle)
+ForceX = Force(1) * cos(slipAngle) + Force(2) * sin(slipAngle)
 ForceY = -Force(1) * sin(slipAngle) + Force(2) * cos(slipAngle)
 ForceZ = Force(3)
+
+Fsidewall = ForceY;
+Ftractive = ForceX;
+Fload = ForceZ;
+
+% runData(all_results, pointList, normalList, areaList, vcenter, radius, sf)
 
 %% Plot stuff
 
@@ -71,9 +64,9 @@ daspect([1 1 1])
 
 
 % plot velocity
-% figure
-% quiver3(pointList(1,:),pointList(2,:),pointList(3,:),vList(1,:),vList(2,:),vList(3,:),2,'Color', [0,0.2,0.8]);
-% daspect([1 1 1])
+figure
+quiver3(pointList(1,:),pointList(2,:),pointList(3,:),vList(1,:),vList(2,:),vList(3,:),2,'Color', [0,0.2,0.8]);
+daspect([1 1 1])
 
 
 %
@@ -204,7 +197,7 @@ daspect([1 1 1])
 
 %% Functions
 
-function runData(all_results, pointList, normalList, areaList, pointSize, vcenter, radius, sf)
+function runData(all_results, pointList, normalList, areaList, vcenter, radius, sf)
 for i=1:length(all_results)
     result = all_results(i);
     wr = result.Vry;
@@ -214,36 +207,32 @@ for i=1:length(all_results)
     sinkage = abs(result.avg_Z);
     slipAngle = result.beta * pi / 180;
     % angular velocity radius/s
-    vcorx = -vcenter * sin(slipAngle);
-    vcory = vcenter * cos(slipAngle);
-    vcorz = 0;
-    vcor = [vcorx; vcory; vcorz];
-    w = -wr / radius;
-    
-    
 
-    % depth = sand with respect to the center of the wheel mm
-    depth = -radius + sinkage;
+    %% Geometry & Velocity Calc
+    [e1List, e2List, vList, vHoriList, v1List, v23List, phi] = calc_velocity(normalList, pointList, wr, vcenter, radius, slipAngle);
 
-    [e1List, e2List, vList, vHoriList, v1List, v23List] = calc_velocity(normalList, pointList, w, vcor);
-    [phi] = calc_Phi(vHoriList, e2List);
     %% Force Calc
     [betaList, gammaList] = calc_BetaGamma(normalList, e2List, v23List);
-    [Force,netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, depth, sf);
+    [Force, netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
 
     % transfer force in wheel frame to global frame
-    ForceX = Force(1) * cos(slipAngle) - Force(2) * sin(slipAngle);
+    ForceX = Force(1) * cos(slipAngle) + Force(2) * sin(slipAngle);
     ForceY = -Force(1) * sin(slipAngle) + Force(2) * cos(slipAngle);
     ForceZ = Force(3);
-
-    RFToutput(i) = struct('ForceX', ForceX, 'ForceY', ForceY, 'ForceZ', ForceZ, 'wr', result.Vry, 'depth', result.avg_Z, 'beta', result.beta, 'slip', result.slip); 
+    Fsidewall = ForceY;
+    Ftractive = ForceX;
+    Fload = ForceZ;
+    RFToutput(i) = struct('ForceX', Ftractive, 'ForceY',Fsidewall , 'ForceZ', Fload, 'wr', result.Vry, 'depth', result.avg_Z, 'beta', result.beta, 'slip', result.slip); 
     i
 end
 save('RFToutput.mat','RFToutput');
 
 end
 
-function [Force,netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, depth, sf);
+function [Force,netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
+
+% depth = sand with respect to the center of the wheel mm
+depth = -radius + sinkage;
 
 idx = pointList(3,:) < depth;
 forcePoints = pointList(:, idx);
@@ -282,49 +271,76 @@ netForce = f1List .* F1tilde + f2List .* F2tilde;
 Force = sum(netForce,2);
 end
 
-% find the local alphax and alphaz with give gamma and beta
-% return alpha in N/(cm^3)
-function [alphaX, alphaZ] = calc_rft_alpha(beta,gamma, sf)
-% using discrete Fourier transform fitting function [Li et al., 2013]
-% Fourier coefficients M
-% granular medium: generic coefficient
-% define (-1 as M1 for simplicity)
-A00 = 0.206;
-A10 = 0.169;
-B11 = 0.212;
-B01 = 0.358;
-BM11 = 0.055;
-C11 = -0.124;
-C01 = 0.253;
-CM11 = 0.007;
-D10 = 0.088;
-M = [A00, A10, B11, B01, BM11, C11, C01, CM11, D10];
 
-beta = wrapToPi(beta);
-gamma = wrapToPi(gamma);
-if beta >= -pi && beta <= -pi/2
-    beta = beta + pi;
-elseif beta >= pi/2 && beta <= pi
-    beta = beta - pi;
+
+function [e1List, e2List, vList, vHoriList, v1List, v23List, phi] = calc_velocity(normalList, pointList, wr, vcenter, radius, slipAngle)
+
+% angular velocity radius/s
+vcorx = -vcenter * sin(slipAngle);
+vcory = vcenter * cos(slipAngle);
+vcorz = 0;
+vcor = [vcorx; vcory; vcorz];
+w = -wr / radius;
+
+numofNormal = size(normalList, 2);
+%e2 unit axis
+e2List = [normalList(1, :);
+    normalList(2, :);
+    zeros(1, numofNormal)];
+idxe2 = (e2List(1, :) == 0 & e2List(2, :) == 0);
+e2List(2,:) = 1 .* idxe2 + e2List(2,:) .* (~idxe2);
+magne2 = sqrt(e2List(1, :) .^2 + e2List(2, :) .^2 + e2List(3, :) .^2);
+e2List = [e2List(1, :) ./ magne2;
+    e2List(2, :) ./ magne2;
+    e2List(3, :) ./ magne2;];
+
+% element radius to the center information (1*n)
+rList = sqrt(pointList(2,:).^2+pointList(3,:).^2);   
+angleList = atan2(pointList(3, :), pointList(2, :)) + pi/2;
+
+vx = zeros([1, size(angleList, 2)]) + vcor(1);
+vy = cos(angleList) .* rList .* w + vcor(2);
+vz = sin(angleList) .* rList .* w + vcor(3);
+
+% velocity
+vList = [vx; 
+    vy; 
+    vz];
+
+vHoriList = [vx; vy; zeros(1, size(angleList, 2))];
+idxV = (vHoriList(1, :) == 0 & vHoriList(2, :) == 0);
+vHoriList(2, :) = 1 .* idxV + vHoriList(2, :) .* (~idxV);
+vHorie2List = dot(vList, e2List) ./ 1 .* e2List;
+
+% e1 unit axis
+e1List = vHoriList - vHorie2List;
+magne1 = sqrt(e1List(1, :) .^2 + e1List(2, :) .^2 + e1List(3, :) .^2);
+e1List = [e1List(1, :) ./ magne1;
+    e1List(2, :) ./ magne1;
+    e1List(3, :) ./ magne1;];
+
+% v1 and v23
+v1List = dot(vList, e1List) ./ 1 .* e1List;
+v23List = vList - v1List;
+
+
+phi = calc_Angles(vHoriList, e2List);
+phi = wrapToPi(phi);
 end
-beta = wrapToPi(beta);
-gamma = wrapToPi(gamma);
-if gamma >= -pi && gamma <= -pi/2
-    alphaZ = sf*(M(1)*cos(0)+M(2)*cos(2*(-beta))+M(3)*sin(2*(-beta)+(-pi-gamma))...
-        +M(4)*sin((-pi-gamma))+M(5)*sin((-2*(-beta))+(-pi-gamma)));
-    alphaX = -sf*(M(6)*cos(2*(-beta)+(-pi-gamma))+M(7)*cos((-pi-gamma))...
-        +M(8)*sin(-2*(-beta)+(-pi-gamma))+M(9)*sin(2*(-beta)));
-elseif gamma >= pi/2 && gamma <= pi
-    alphaZ = sf*(M(1)*cos(0)+M(2)*cos(2*(-beta))+M(3)*sin(2*(-beta)+(pi-gamma))...
-        +M(4)*sin((pi-gamma))+M(5)*sin((-2*(-beta))+(pi-gamma)));
-    alphaX = -sf*(M(6)*cos(2*(-beta)+(pi-gamma))+M(7)*cos((pi-gamma))...
-        +M(8)*sin(-2*(-beta)+(pi-gamma))+M(9)*sin(2*(-beta)));
-else
-    alphaZ = sf*(M(1)*cos(0)+M(2)*cos(2*beta)+M(3)*sin(2*beta+gamma)...
-        +M(4)*sin(gamma)+M(5)*sin((-2*beta)+gamma));
-    alphaX = sf*(M(6)*cos(2*beta+gamma)+M(7)*cos(gamma)...
-        +M(8)*sin(-2*beta+gamma)+M(9)*sin(2*beta));
-end
+
+
+
+function [betaList, gammaList] = calc_BetaGamma(normalList, e2List, v23List)
+betaList = calc_Angles(normalList, e2List);
+idxBeta = normalList(3,:) < 0;
+betaList(idxBeta) = - betaList(idxBeta);
+betaList = betaList + pi/2;
+betaList = wrapToPi(betaList);
+
+gammaList = calc_Angles(v23List, e2List);
+idxGamma = v23List(3,:) > 0;
+gammaList(idxGamma) = - gammaList(idxGamma);
+gammaList = wrapToPi(gammaList);
 
 end
 
@@ -373,113 +389,93 @@ angles = acos((dotprd)./(timeprd));
 end
 
 
-function [e1List, e2List, vList, vHoriList, v1List, v23List] = calc_velocity(normalList, pointList, w, vcor)
-numofNormal = size(normalList, 2);
-%e2 unit axis
-e2List = [normalList(1, :);
-    normalList(2, :);
-    zeros(1, numofNormal)];
-idxe2 = (e2List(1, :) == 0 & e2List(2, :) == 0);
-e2List(2,:) = 1 .* idxe2 + e2List(2,:) .* (~idxe2);
-magne2 = sqrt(e2List(1, :) .^2 + e2List(2, :) .^2 + e2List(3, :) .^2);
-e2List = [e2List(1, :) ./ magne2;
-    e2List(2, :) ./ magne2;
-    e2List(3, :) ./ magne2;];
+% find the local alphax and alphaz with give gamma and beta
+% return alpha in N/(cm^3)
+function [alphaX, alphaZ] = calc_rft_alpha(beta,gamma, sf)
+% using discrete Fourier transform fitting function [Li et al., 2013]
+% Fourier coefficients M
+% granular medium: generic coefficient
+% define (-1 as M1 for simplicity)
+A00 = 0.206;
+A10 = 0.169;
+B11 = 0.212;
+B01 = 0.358;
+BM11 = 0.055;
+C11 = -0.124;
+C01 = 0.253;
+CM11 = 0.007;
+D10 = 0.088;
+M = [A00, A10, B11, B01, BM11, C11, C01, CM11, D10];
 
-% element radius to the center information (1*n)
-rList = sqrt(pointList(2,:).^2+pointList(3,:).^2);   
-angleList = atan2(pointList(3, :), pointList(2, :)) + pi/2;
-
-vx = zeros([1, size(angleList, 2)]) + vcor(1);
-vy = cos(angleList) .* rList .* w + vcor(2);
-vz = sin(angleList) .* rList .* w + vcor(3);
-
-% velocity
-vList = [vx; 
-    vy; 
-    vz];
-
-vHoriList = [vx; vy; zeros(1, size(angleList, 2))];
-idxV = (vHoriList(1, :) == 0 & vHoriList(2, :) == 0);
-vHoriList(2, :) = 1 .* idxV + vHoriList(2, :) .* (~idxV);
-vHorie2List = dot(vList, e2List) ./ 1 .* e2List;
-
-% e1 unit axis
-e1List = vHoriList - vHorie2List;
-magne1 = sqrt(e1List(1, :) .^2 + e1List(2, :) .^2 + e1List(3, :) .^2);
-e1List = [e1List(1, :) ./ magne1;
-    e1List(2, :) ./ magne1;
-    e1List(3, :) ./ magne1;];
-
-% v1 and v23
-v1List = dot(vList, e1List) ./ 1 .* e1List;
-v23List = vList - v1List;
-
+beta = wrapToPi(beta);
+gamma = wrapToPi(gamma);
+if beta >= -pi && beta <= -pi/2
+    beta = beta + pi;
+elseif beta >= pi/2 && beta <= pi
+    beta = beta - pi;
+end
+beta = wrapToPi(beta);
+gamma = wrapToPi(gamma);
+if gamma >= -pi && gamma <= -pi/2
+    alphaZ = sf*(M(1)*cos(0)+M(2)*cos(2*(-beta))+M(3)*sin(2*(-beta)+(-pi-gamma))...
+        +M(4)*sin((-pi-gamma))+M(5)*sin((-2*(-beta))+(-pi-gamma)));
+    alphaX = -sf*(M(6)*cos(2*(-beta)+(-pi-gamma))+M(7)*cos((-pi-gamma))...
+        +M(8)*sin(-2*(-beta)+(-pi-gamma))+M(9)*sin(2*(-beta)));
+elseif gamma >= pi/2 && gamma <= pi
+    alphaZ = sf*(M(1)*cos(0)+M(2)*cos(2*(-beta))+M(3)*sin(2*(-beta)+(pi-gamma))...
+        +M(4)*sin((pi-gamma))+M(5)*sin((-2*(-beta))+(pi-gamma)));
+    alphaX = -sf*(M(6)*cos(2*(-beta)+(pi-gamma))+M(7)*cos((pi-gamma))...
+        +M(8)*sin(-2*(-beta)+(pi-gamma))+M(9)*sin(2*(-beta)));
+else
+    alphaZ = sf*(M(1)*cos(0)+M(2)*cos(2*beta)+M(3)*sin(2*beta+gamma)...
+        +M(4)*sin(gamma)+M(5)*sin((-2*beta)+gamma));
+    alphaX = sf*(M(6)*cos(2*beta+gamma)+M(7)*cos(gamma)...
+        +M(8)*sin(-2*beta+gamma)+M(9)*sin(2*beta));
 end
 
-
-function [phi] = calc_Phi(vHoriList, e2List)
-phi = calc_Angles(vHoriList, e2List);
-phi = wrapToPi(phi);
 end
-
-
-function [betaList, gammaList] = calc_BetaGamma(normalList, e2List, v23List)
-betaList = calc_Angles(normalList, e2List);
-idxBeta = normalList(3,:) < 0;
-betaList(idxBeta) = - betaList(idxBeta);
-betaList = betaList + pi/2;
-betaList = wrapToPi(betaList);
-
-gammaList = calc_Angles(v23List, e2List);
-idxGamma = v23List(3,:) > 0;
-gammaList(idxGamma) = - gammaList(idxGamma);
-gammaList = wrapToPi(gammaList);
-
-end
-
 
 %UNUSED FUNCTIONS
 
 % [e1List, e2List] = calc_e1e2(normalList);
 % [vList, vHoriList, v1List, v23List] = calc_Vel(pointList, w, radius, e1List, vcor);
 
-function [e1List, e2List] = calc_e1e2(normalList)
-numofNormal = size(normalList, 2);
-%e2 unit axis
-e2List = [normalList(1, :);
-    normalList(2, :);
-    zeros(1, numofNormal)];
-idxe2 = (e2List(1, :) == 0 & e2List(2, :) == 0);
-e2List(2,:) = 1 .* idxe2 + e2List(2,:) .* (~idxe2);
-
-magne2 = sqrt(e2List(1, :) .^2 + e2List(2, :) .^2 + e2List(3, :) .^2);
-e2List = [e2List(1, :) ./ magne2;
-    e2List(2, :) ./ magne2;
-    e2List(3, :) ./ magne2;];
-%e1 unit axis
-e1List = [e2List(1,:).*cos(-pi/2)+e2List(2,:).*-sin(-pi/2);
-    e2List(1,:).*sin(-pi/2)+e2List(2,:).*cos(-pi/2);
-    e2List(3,:)];
-
-end
-function [vList, vHoriList, v1List, v23List] = calc_Vel(pointList, w, radius,e1List,vcor)
-% element radius to the center information (1*n)
-rList = sqrt(pointList(2,:).^2+pointList(3,:).^2);
-
-% element tangent angle (1*n)
-angleList = atan2(pointList(3,:),pointList(2,:))+pi/2;
-
-vx = zeros([1,size(angleList,2)])+vcor(1);
-vy = cos(angleList).*rList.*w+vcor(2);
-vz = sin(angleList).*rList.*w+vcor(3);
-
-vList = [vx;vy;vz];
-
-vHoriList = [vx;vy;zeros(1,size(angleList,2))];
-
-idxV = (vHoriList(1,:)==0 & vHoriList(2,:)==0);
-vHoriList(2,:) = 1.*idxV+vHoriList(2,:).*(~idxV);
-v1List = dot(vList,e1List)./1.*e1List;
-v23List = vList-v1List;
-end
+% function [e1List, e2List] = calc_e1e2(normalList)
+% numofNormal = size(normalList, 2);
+% %e2 unit axis
+% e2List = [normalList(1, :);
+%     normalList(2, :);
+%     zeros(1, numofNormal)];
+% idxe2 = (e2List(1, :) == 0 & e2List(2, :) == 0);
+% e2List(2,:) = 1 .* idxe2 + e2List(2,:) .* (~idxe2);
+% 
+% magne2 = sqrt(e2List(1, :) .^2 + e2List(2, :) .^2 + e2List(3, :) .^2);
+% e2List = [e2List(1, :) ./ magne2;
+%     e2List(2, :) ./ magne2;
+%     e2List(3, :) ./ magne2;];
+% %e1 unit axis
+% e1List = [e2List(1,:).*cos(-pi/2)+e2List(2,:).*-sin(-pi/2);
+%     e2List(1,:).*sin(-pi/2)+e2List(2,:).*cos(-pi/2);
+%     e2List(3,:)];
+% 
+% end
+% function [vList, vHoriList, v1List, v23List] = calc_Vel(pointList, w, radius,e1List,vcor)
+% % element radius to the center information (1*n)
+% rList = sqrt(pointList(2,:).^2+pointList(3,:).^2);
+% 
+% % element tangent angle (1*n)
+% angleList = atan2(pointList(3,:),pointList(2,:))+pi/2;
+% 
+% vx = zeros([1,size(angleList,2)])+vcor(1);
+% vy = cos(angleList).*rList.*w+vcor(2);
+% vz = sin(angleList).*rList.*w+vcor(3);
+% 
+% vList = [vx;vy;vz];
+% 
+% vHoriList = [vx;vy;zeros(1,size(angleList,2))];
+% 
+% idxV = (vHoriList(1,:)==0 & vHoriList(2,:)==0);
+% vHoriList(2,:) = 1.*idxV+vHoriList(2,:).*(~idxV);
+% v1List = dot(vList,e1List)./1.*e1List;
+% v23List = vList-v1List;
+% end
