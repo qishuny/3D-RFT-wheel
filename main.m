@@ -6,15 +6,17 @@
 % area (1*n) data.Area
 % normal vectors (3*n) data.Normals
 load('all_smooth_data_2.mat')
-data = matfile('data/smooth_wheel_125.mat');
+wheeldata = matfile('data/smooth_wheel_125.mat');
 % data = matfile(data/wheel_106.mat');
 % data = matfile('data/plate.mat');
 
-pointList = data.Points;
-areaList = data.Area;
-normalList = data.Normals;
-pointSize = size(pointList, 2);
+pointList = wheeldata.Points;
+areaList = wheeldata.Area;
+normalList = wheeldata.Normals;
 
+plotForce = 0;
+plotVelocity = 0;
+plotGeometry = 0;
 
 %% SET parameters
 % SET slip angle
@@ -22,7 +24,7 @@ slipAngle = pi/4;
 % SET velocity of the center of rotation of the body mm/s
 vcenter = 10;
 % SET wheel rotational speed mm/s
-wr = 0.001;
+wr = 100;
 % SET sinkage mm
 sinkage = 40;
 % SET radius
@@ -30,7 +32,9 @@ radius = 62.5;
 % SET scaling factor
 sf = 1;
 
+%% run all slip conditions
 
+% runData(all_results, pointList, normalList, areaList, vcenter, radius, sf)
 
 %% Geometry & Velocity Calc
 [e1List, e2List, vList, vHoriList, v1List, v23List, phi] = calc_velocity(normalList, pointList, wr, vcenter, radius, slipAngle);
@@ -48,104 +52,89 @@ Fsidewall = ForceY;
 Ftractive = ForceX;
 Fload = ForceZ;
 
-% runData(all_results, pointList, normalList, areaList, vcenter, radius, sf)
-
-%% Plot stuff
-
-% plot force
-figure
-quiver3(pointList(1, idx),pointList(2, idx),pointList(3, idx),netForce(1,:),netForce(2,:),netForce(3,:),2,'Color', [0,0.2,0.8]);
-legend('force')
-hold on 
-quiver3(zeros(3,1),zeros(3,1),zeros(3,1),[10;0;0],[0;10;0],[0;0;10]);
-legend('unit vector')
-daspect([1 1 1])
-
-
-
-% plot velocity
-figure
-quiver3(pointList(1,:),pointList(2,:),pointList(3,:),vList(1,:),vList(2,:),vList(3,:),2,'Color', [0,0.2,0.8]);
-daspect([1 1 1])
-
-
-%
-% figure
-% for k =1:200:size(pointList,2)
-%     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e2List(1,k),e2List(2,k),e2List(3,k),10,'g');
-%     hold on
-%     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),v23List(1,k),v23List(2,k),v23List(3,k),0.1,'r');
-%     legend('e2','v23')
-%     text(pointList(1,k),pointList(2,k),pointList(3,k),string(gammaList(k)*180/pi))
-%     daspect([1 1 1])
-% end
-%
-% figure
-% for k =1:200:size(pointList,2)
-%     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e2List(1,k),e2List(2,k),e2List(3,k),10,'g');
-%     hold on
-%     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),normalList(1,k),normalList(2,k),normalList(3,k),10,'r');
-%     legend('e2','normal')
-%     text(pointList(1,k),pointList(2,k),pointList(3,k),string(betaList(k)*180/pi))
-%     daspect([1 1 1])
-% end
-
-%Plot selected normal vector and e1,e2
-
-% figure
-% for k =1:200:size(pointList,2)
-%     plot3(pointList(1,k),pointList(2,k),pointList(3,k),'ok','MarkerFaceColor',[0,0.5,0.5])
-%     hold on
-%     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),normalList(1,k),normalList(2,k),normalList(3,k),10,'Color', [0,0.2,0.8]);
-%     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e1List(1,k),e1List(2,k),e1List(3,k),10,'r');
-%     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e2List(1,k),e2List(2,k),e2List(3,k),10,'g');
-%     legend('point','normal vector','e1 axis','e2 axis')
-%     daspect([1 1 1])
-% end
-
-
-%Plot selected velocity and v1,v23
-
-% figure
-% for k =1:200:size(pointList,2)
-%     
-%     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),vList(1,k),vList(2,k),vList(3,k),1,'Color', [0,0.2,0.8]);
-%     hold on
-%     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),v1List(1,k),v1List(2,k),v1List(3,k),1,'r');
-%     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),v23List(1,k),v23List(2,k),v23List(3,k),1,'g');
-%     legend('velocity','v1','v23')
-%     daspect([1 1 1])
-% end
 
 
 
 
-% plot velocity
-% figure
-% for k =1:150:size(forcePoints,2)
-% 
-%     quiver3(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),forceV1(1,k),forceV1(2,k),forceV1(3,k),0.5,'Color', [0,0.2,0.8]);
-%     hold on
-%     quiver3(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),forcee1(1,k),forcee1(2,k),forcee1(3,k),1,'r');
-%     text(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),string(forceGamma(k)*180/pi))
-%     legend('V1','e1')
-% 
-% end
-% daspect([1 1 1])
+%% plot force
+if plotForce == 1
+    figure
+    quiver3(pointList(1, idx),pointList(2, idx),pointList(3, idx),netForce(1,:),netForce(2,:),netForce(3,:),2,'Color', [0,0.2,0.8]);
+
+    hold on 
+
+    quiver3(0, 0, 0, 10, 0, 0, 'r');
+    text(10,0,0,'x')
+    quiver3(0, 0, 0, 0, 10, 0, 'g');
+    text(0, 10, 0,'y')
+    quiver3(0, 0, 0, 0, 0, 10, 'y');
+    text(0, 0, 10,'z')
+    legend('force');
+    daspect([1 1 1])
+end
 
 
-%Plot velocity and v1 v23
-% figure
-% for k =1:150:size(forcePoints,2)
-% 
-%     quiver3(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),forceV23(1,k),forceV23(2,k),forceV23(3,k),0.5,'Color', [0,0.2,0.8]);
-%     hold on
-%     quiver3(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),forcee2(1,k),forcee2(2,k),forcee2(3,k),1,'r');
-%     text(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),string(forceGamma(k)*180/pi))
-%     legend('V23','e2')
-% 
-% end
-% daspect([1 1 1])
+
+%% plot velocity
+if plotVelocity == 1
+    
+    %Plot selected velocity and v1,v23
+    figure
+    for k =1:200:size(pointList,2)
+
+        quiver3(pointList(1,k),pointList(2,k),pointList(3,k),vList(1,k),vList(2,k),vList(3,k),1,'Color', [0,0.2,0.8]);
+        hold on
+        quiver3(pointList(1,k),pointList(2,k),pointList(3,k),v1List(1,k),v1List(2,k),v1List(3,k),1,'r');
+        quiver3(pointList(1,k),pointList(2,k),pointList(3,k),v23List(1,k),v23List(2,k),v23List(3,k),1,'g');
+        legend('velocity','v1','v23')
+        daspect([1 1 1])
+    end
+
+    % Plot v23 and e2
+
+    figure
+    for k =1:200:size(pointList,2)
+        quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e2List(1,k),e2List(2,k),e2List(3,k),'g');
+        hold on
+        quiver3(pointList(1,k),pointList(2,k),pointList(3,k),v23List(1,k),v23List(2,k),v23List(3,k),'r');
+        legend('e2','v23')
+    %     text(pointList(1,k),pointList(2,k),pointList(3,k),string(gammaList(k)*180/pi))
+        daspect([1 1 1])
+    end
+
+    %Plot v1 and e1
+    figure
+    for k =1:200:size(pointList,2)
+        quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e1List(1,k),e1List(2,k),e1List(3,k),'g');
+        hold on
+        quiver3(pointList(1,k),pointList(2,k),pointList(3,k),v1List(1,k),v1List(2,k),v1List(3,k),'r');
+        legend('e1','v1')
+        daspect([1 1 1])
+    end
+end
+
+
+%% Plot geometry
+if plotGeometry == 1  
+    %Plot selected normal vector and e1,e2
+    figure
+    for k =1:200:size(pointList,2)
+        plot3(pointList(1,k),pointList(2,k),pointList(3,k),'ok','MarkerFaceColor',[0,0.5,0.5])
+        hold on
+        quiver3(pointList(1,k),pointList(2,k),pointList(3,k),normalList(1,k),normalList(2,k),normalList(3,k),10,'Color', [0,0.2,0.8]);
+        quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e1List(1,k),e1List(2,k),e1List(3,k),10,'r');
+        quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e2List(1,k),e2List(2,k),e2List(3,k),10,'g');
+        legend('point','normal vector','e1 axis','e2 axis')
+        daspect([1 1 1])
+    end
+
+end
+
+
+
+
+
+
 
 
 % figure
@@ -252,8 +241,8 @@ for i = 1:numofForce
     [ax23(i),az23(i)] = calc_rft_alpha(forceBeta(i),forceGamma(i), sf);
 end
 
-magF1 = -ay1 .* abs(depth - pointList(3,idx)) .* (areaList(idx) * 10^-3);
-magF2 = -ax23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) * 10^-3);
+magF1 = -ay1 .* abs(depth - pointList(3,idx)) .* (areaList(idx) * 10 ^ -3);
+magF2 = -ax23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) * 10 ^ -3);
 % F1 force in N
 F1tilde = magF1 .* e1List(:,idx);
 F2tilde = magF2 .* e2List(:,idx);
@@ -358,15 +347,16 @@ b2 = 1.61;
 b3 = 0.97;
 b4 = 4.31;
 
-phi = wrapToPi(phi);
 
-if phi>pi/2 && phi<=pi
+
+if phi > pi/2 && phi <= pi
     phi = pi-phi;
-elseif phi<0 && phi>=-pi/2
+elseif phi < 0 && phi >= -pi/2
     phi = -phi;
-elseif phi<-pi/2 && phi >=-pi
-    phi = phi+pi;
+elseif phi < -pi/2 && phi >= -pi
+    phi = phi + pi;
 end
+
 v1v = sin(phi);
 v23v = cos(phi);
 

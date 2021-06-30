@@ -1,5 +1,7 @@
 [x1, z1] = rft_alpha(pi/2, 0)
-[x2, z2] = rft_alpha(pi/2, pi)
+[x2, z2] = rft_alpha(0, 0)
+
+[f1, f23] = normalScale(pi/4)
 
 function [alphaX, alphaZ] = rft_alpha(beta,gamma)
 % using discrete Fourier transform fitting function [Li et al., 2013]
@@ -46,4 +48,37 @@ else
         +M(8)*sin(-2*beta+gamma)+M(9)*sin(2*beta));
 end
 
+end
+
+
+function [f1, f23] = normalScale(phi)
+a1 = 0.44;
+a2 = 3.62;
+a3 = 1.61;
+a4 = 0.41;
+
+b1 = 1.99;
+b2 = 1.61;
+b3 = 0.97;
+b4 = 4.31;
+
+phi = wrapToPi(phi);
+
+if phi>pi/2 && phi<=pi
+    phi = pi-phi;
+elseif phi<0 && phi>=-pi/2
+    phi = -phi;
+elseif phi<-pi/2 && phi >=-pi
+    phi = phi+pi;
+end
+v1v = sin(phi);
+v23v = cos(phi);
+
+F1 = a1 * tanh(a2 * v1v - a3) + a4;
+F23 = b1 * atanh(b2 * v23v - b3) + b4;
+F1max =a1 * tanh(a2 * sin(pi/2) - a3) + a4;
+F23max = b1 * atanh(b2 * cos(0) - b3) + b4;
+
+f1 = F1 / F1max;
+f23 = F23 / F23max;
 end
