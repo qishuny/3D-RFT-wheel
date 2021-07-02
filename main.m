@@ -17,19 +17,20 @@ pointList = wheeldata.Points;
 areaList = wheeldata.Area;
 normalList = wheeldata.Normals;
 
+% 1 for plot 0 for not
 plotForce = 0;
 plotVelocity = 0;
 plotGeometry = 0;
 
 %% SET parameters
 % SET slip angle
-slipAngle = pi/4;
+slipAngle = pi/2;
 % SET velocity of the center of rotation of the body mm/s
 vcenter = 10;
 % SET wheel rotational speed mm/s
-wr = 100;
+wr = 0.001;
 % SET sinkage mm
-sinkage = 17;
+sinkage = 20;
 % SET radius
 radius = 62.5;
 % radius = 17;
@@ -47,14 +48,14 @@ runData(all_results, pointList, normalList, areaList, vcenter, radius, sf)
 [Force, netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
 
 % transfer force in wheel frame to global frame
-ForceX = Force(1) * cos(slipAngle) + Force(2) * sin(slipAngle)
-ForceY = -Force(1) * sin(slipAngle) + Force(2) * cos(slipAngle)
-ForceZ = Force(3)
+% ForceX = Force(1) * cos(slipAngle) + Force(2) * sin(slipAngle)
+% ForceY = -Force(1) * sin(slipAngle) + Force(2) * cos(slipAngle)
+% ForceZ = Force(3)
 
 % transfer to experiment result frame
-Fsidewall = -ForceY;
-Ftractive = ForceX;
-Fload = ForceZ;
+Fsidewall = -Force(1);
+Ftractive = Force(2);
+Fload = Force(3);
 
 
 
@@ -125,38 +126,17 @@ end
 if plotGeometry == 1  
     %Plot selected normal vector and e1,e2
     figure
-    for k =1:gapSize:size(pointList,2)
-        plot3(pointList(1,k),pointList(2,k),pointList(3,k),'ok','MarkerFaceColor',[0,0.5,0.5])
-        hold on
-        quiver3(pointList(1,k),pointList(2,k),pointList(3,k),normalList(1,k),normalList(2,k),normalList(3,k),10,'Color', [0,0.2,0.8]);
-        quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e1List(1,k),e1List(2,k),e1List(3,k),10,'r');
-        quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e2List(1,k),e2List(2,k),e2List(3,k),10,'g');
-        legend('point','normal vector','e1 axis','e2 axis')
-        daspect([1 1 1])
-    end
+    
+    plot3(pointList(1,:),pointList(2,:),pointList(3,:),'ok','MarkerFaceColor',[0,0.5,0.5])
+    hold on
+    quiver3(pointList(1,:),pointList(2,:),pointList(3,:),normalList(1,:),normalList(2,:),normalList(3,:),10,'Color', [0,0.2,0.8]);
+    quiver3(pointList(1,:),pointList(2,:),pointList(3,:),e1List(1,:),e1List(2,:),e1List(3,:),10,'r');
+    quiver3(pointList(1,:),pointList(2,:),pointList(3,:),e2List(1,:),e2List(2,:),e2List(3,:),10,'g');
+    legend('point','normal vector','e1 axis','e2 axis')
+    daspect([1 1 1])
+    
 
 end
-
-
-
-
-
-
-
-
-% figure
-% for k =1:150:size(forcePoints,2)
-% 
-%     quiver3(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),forceNormals(1,k),forceNormals(2,k),forceNormals(3,k),'Color', [0,0.2,0.8]);
-%     hold on
-%     quiver3(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),forcee2(1,k),forcee2(2,k),forcee2(3,k),1,'r');
-%     text(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),string(forceBeta(k)*180/pi))
-%     legend('normal','e2')
-% end
-% daspect([1 1 1])
-
-
-
 
 % figure
 % for k =1:25:size(forcePoints,2)
@@ -177,19 +157,6 @@ end
 %     text(forcePoints(1, k),forcePoints(2, k),forcePoints(3, k),string(az23(1, k)));
 % end
 % daspect([1 1 1]);
-
-
-
-
-% figure
-% for k =1:150:size(pointList,2)
-%     plot3(pointList(1,k),pointList(2,k),pointList(3,k),'ok','MarkerFaceColor',[0,0.5,0.5])
-%     hold on
-%     text(pointList(1,k),pointList(2,k),pointList(3,k),string(phi(k)*180/pi))
-%     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e2List(1,k),e2List(2,k),e2List(3,k),10,'Color', [0,0.2,0.8]);
-%     quiver3(pointList(1,k),pointList(2,k),pointList(3,k),vHoriList(1,k),vHoriList(2,k),vHoriList(3,k),0.1,'g');
-% end
-% daspect([1 1 1])
 
 %% Functions
 
@@ -216,9 +183,9 @@ for i=1:length(all_results)
     ForceX = Force(1) * cos(slipAngle) + Force(2) * sin(slipAngle);
     ForceY = -Force(1) * sin(slipAngle) + Force(2) * cos(slipAngle);
     ForceZ = Force(3);
-    Fsidewall = -ForceX;
-    Ftractive = ForceY;
-    Fload = ForceZ;
+    Fsidewall = -Force(1);
+    Ftractive = Force(2);
+    Fload = Force(3);
     RFToutput(i) = struct('ForceX', Ftractive, 'ForceY',Fsidewall , 'ForceZ', Fload, 'wr', result.Vry, 'depth', result.avg_Z, 'beta', result.beta, 'slip', result.slip); 
     i
 end
@@ -249,12 +216,12 @@ for i = 1:numofForce
     [ax23(i),az23(i)] = calc_rft_alpha(forceBeta(i),forceGamma(i), sf);
 end
 
-magF1 = -ay1 .* abs(depth - pointList(3,idx)) .* (areaList(idx) * 10 ^ -3);
-magF2 = -ax23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) * 10 ^ -3);
+magF1 = -ay1 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3);
+magF2 = -ax23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3);
 % F1 force in N
 F1tilde = magF1 .* e1List(:,idx);
 F2tilde = magF2 .* e2List(:,idx);
-F2tilde(3,:) = az23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) * 10^-3);
+F2tilde(3,:) = az23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10^-3);
 
 
 f1List = zeros(1,size(F1tilde,2));
@@ -292,7 +259,7 @@ e2List = [e2List(1, :) ./ magne2;
     e2List(3, :) ./ magne2;];
 
 % element radius to the center information (1*n)
-rList = sqrt(pointList(2,:).^2+pointList(3,:).^2);   
+rList = sqrt(pointList(2,:).^2 + pointList(3,:).^2);   
 angleList = atan2(pointList(3, :), pointList(2, :)) + pi/2;
 
 vx = zeros([1, size(angleList, 2)]) + vcor(1);
@@ -373,7 +340,7 @@ v23v = cos(phi);
 
 F1 = a1 * tanh(a2 * v1v - a3) + a4;
 F23 = b1 * atanh(b2 * v23v - b3) + b4;
-F1max =a1 * tanh(a2 * sin(pi/2) - a3) + a4;
+F1max = a1 * tanh(a2 * sin(pi/2) - a3) + a4;
 F23max = b1 * atanh(b2 * cos(0) - b3) + b4;
 
 f1 = F1 / F1max;
@@ -382,11 +349,13 @@ end
 
 
 function angles = calc_Angles(v1, v2)
-dotprd =v1(1,:).*v2(1,:)+v1(2,:).*v2(2,:)+v1(3,:).*v2(3,:);
-timeprd = sqrt(v1(1,:).^2+v1(2,:).^2+v1(3,:).^2).*sqrt(v2(1,:).^2+v2(2,:).^2+v2(3,:).^2);
+dotprd =v1(1, :) .* v2(1, :) + v1(2, :) .* v2(2, :) + v1(3, :) .* v2(3, :);
+timeprd = sqrt(v1(1, :) .^2 + v1(2, :) .^ 2 ...
+    + v1(3,: ) .^2) .* sqrt(v2(1, :) .^ 2 ...
+    + v2(2,:).^2+v2(3,:).^2);
 
 % not stable, may output imaginary value when angle is around pi. 
-angles = acos((dotprd)./(timeprd));
+angles = acos(dotprd ./ timeprd);
 end
 
 
