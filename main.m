@@ -2,13 +2,16 @@
 % Qishun Yu Catherine Pavlov
 % 02/21/2021
 
+% load experiment data
+load('all_smooth_data_2.mat')
+
 % points (3*n) data.Points
 % area (1*n) data.Area
 % normal vectors (3*n) data.Normals
-load('all_smooth_data_2.mat')
+
 wheeldata = matfile('data/smooth_wheel_125.mat');
-% data = matfile(data/wheel_106.mat');
-% data = matfile('data/plate.mat');
+% wheeldata = matfile(data/wheel_106.mat');
+% wheeldata = matfile('data/plate.mat');
 
 pointList = wheeldata.Points;
 areaList = wheeldata.Area;
@@ -26,15 +29,15 @@ vcenter = 10;
 % SET wheel rotational speed mm/s
 wr = 100;
 % SET sinkage mm
-sinkage = 40;
+sinkage = 17;
 % SET radius
 radius = 62.5;
+% radius = 17;
 % SET scaling factor
 sf = 1;
 
 %% run all slip conditions
-
-% runData(all_results, pointList, normalList, areaList, vcenter, radius, sf)
+runData(all_results, pointList, normalList, areaList, vcenter, radius, sf)
 
 %% Geometry & Velocity Calc
 [e1List, e2List, vList, vHoriList, v1List, v23List, phi] = calc_velocity(normalList, pointList, wr, vcenter, radius, slipAngle);
@@ -48,7 +51,8 @@ ForceX = Force(1) * cos(slipAngle) + Force(2) * sin(slipAngle)
 ForceY = -Force(1) * sin(slipAngle) + Force(2) * cos(slipAngle)
 ForceZ = Force(3)
 
-Fsidewall = ForceY;
+% transfer to experiment result frame
+Fsidewall = -ForceY;
 Ftractive = ForceX;
 Fload = ForceZ;
 
@@ -76,11 +80,14 @@ end
 
 
 %% plot velocity
+
+gapSize = 2;
 if plotVelocity == 1
+    
     
     %Plot selected velocity and v1,v23
     figure
-    for k =1:200:size(pointList,2)
+    for k =1:gapSize:size(pointList,2)
 
         quiver3(pointList(1,k),pointList(2,k),pointList(3,k),vList(1,k),vList(2,k),vList(3,k),1,'Color', [0,0.2,0.8]);
         hold on
@@ -93,7 +100,7 @@ if plotVelocity == 1
     % Plot v23 and e2
 
     figure
-    for k =1:200:size(pointList,2)
+    for k =1:gapSize:size(pointList,2)
         quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e2List(1,k),e2List(2,k),e2List(3,k),'g');
         hold on
         quiver3(pointList(1,k),pointList(2,k),pointList(3,k),v23List(1,k),v23List(2,k),v23List(3,k),'r');
@@ -104,7 +111,7 @@ if plotVelocity == 1
 
     %Plot v1 and e1
     figure
-    for k =1:200:size(pointList,2)
+    for k =1:gapSize:size(pointList,2)
         quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e1List(1,k),e1List(2,k),e1List(3,k),'g');
         hold on
         quiver3(pointList(1,k),pointList(2,k),pointList(3,k),v1List(1,k),v1List(2,k),v1List(3,k),'r');
@@ -118,7 +125,7 @@ end
 if plotGeometry == 1  
     %Plot selected normal vector and e1,e2
     figure
-    for k =1:200:size(pointList,2)
+    for k =1:gapSize:size(pointList,2)
         plot3(pointList(1,k),pointList(2,k),pointList(3,k),'ok','MarkerFaceColor',[0,0.5,0.5])
         hold on
         quiver3(pointList(1,k),pointList(2,k),pointList(3,k),normalList(1,k),normalList(2,k),normalList(3,k),10,'Color', [0,0.2,0.8]);
@@ -194,6 +201,7 @@ for i=1:length(all_results)
         wr = 0.00001;
     end  
     sinkage = abs(result.avg_Z);
+%     sinkage = 20;
     slipAngle = result.beta * pi / 180;
     % angular velocity radius/s
 
@@ -208,8 +216,8 @@ for i=1:length(all_results)
     ForceX = Force(1) * cos(slipAngle) + Force(2) * sin(slipAngle);
     ForceY = -Force(1) * sin(slipAngle) + Force(2) * cos(slipAngle);
     ForceZ = Force(3);
-    Fsidewall = ForceY;
-    Ftractive = ForceX;
+    Fsidewall = -ForceX;
+    Ftractive = ForceY;
     Fload = ForceZ;
     RFToutput(i) = struct('ForceX', Ftractive, 'ForceY',Fsidewall , 'ForceZ', Fload, 'wr', result.Vry, 'depth', result.avg_Z, 'beta', result.beta, 'slip', result.slip); 
     i
@@ -312,7 +320,7 @@ e1List = [e1List(1, :) ./ magne1;
 v1List = dot(vList, e1List) ./ 1 .* e1List;
 v23List = vList - v1List;
 
-
+% calculate phi
 phi = calc_Angles(vHoriList, e2List);
 phi = wrapToPi(phi);
 end
@@ -320,12 +328,15 @@ end
 
 
 function [betaList, gammaList] = calc_BetaGamma(normalList, e2List, v23List)
+
+% beta
 betaList = calc_Angles(normalList, e2List);
 idxBeta = normalList(3,:) < 0;
 betaList(idxBeta) = - betaList(idxBeta);
 betaList = betaList + pi/2;
 betaList = wrapToPi(betaList);
 
+% gamma
 gammaList = calc_Angles(v23List, e2List);
 idxGamma = v23List(3,:) > 0;
 gammaList(idxGamma) = - gammaList(idxGamma);
