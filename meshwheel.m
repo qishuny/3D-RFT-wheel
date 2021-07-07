@@ -4,7 +4,7 @@ clc
 
 
 model = createpde();
-gc = importGeometry(model,'wheel model/smooth_wheel_150.stl');
+gc = importGeometry(model,'wheel model/grousered_wheel_125.stl');
 
 figure
 pdegplot(model,'FaceLabels','on')
