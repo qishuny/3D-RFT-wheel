@@ -9,8 +9,8 @@ load('all_smooth_data_2.mat')
 % area (1*n) data.Area
 % normal vectors (3*n) data.Normals
 
-wheeldata = matfile('data/smooth_wheel_125.mat');
-% wheeldata = matfile(data/wheel_106.mat');
+% wheeldata = matfile('data/smooth_wheel_125.mat');
+wheeldata = matfile('data/grousered_wheel_125.mat');
 % wheeldata = matfile('data/plate.mat');
 
 pointList = wheeldata.Points;
@@ -18,7 +18,7 @@ areaList = wheeldata.Area;
 normalList = wheeldata.Normals;
 
 % 1 for plot 0 for not
-plotForce = 0;
+plotForce = 1;
 plotVelocity = 0;
 plotGeometry = 0;
 
@@ -38,7 +38,7 @@ radius = 62.5;
 sf = 1;
 
 %% run all slip conditions
-% runData(all_results, pointList, normalList, areaList, vcenter, radius, sf)
+runData(all_results, pointList, normalList, areaList, vcenter, radius, sf)
 tic
 %% Geometry & Velocity Calc
 [e1List, e2List, vList, vHoriList, v1List, v23List, phi] = calc_velocity(normalList, pointList, wr, vcenter, radius, slipAngle);
