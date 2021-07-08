@@ -38,7 +38,7 @@ radius = 62.5;
 sf = 1;
 
 %% run all slip conditions
-runData(all_results, pointList, normalList, areaList, vcenter, radius, sf)
+% runData(all_results, pointList, normalList, areaList, vcenter, radius, sf)
 tic
 %% Geometry & Velocity Calc
 [e1List, e2List, vList, vHoriList, v1List, v23List, phi] = calc_velocity(normalList, pointList, wr, vcenter, radius, slipAngle);
