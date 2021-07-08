@@ -3,7 +3,7 @@ close all
 clc
 
 %% grousered wheel
-TRG = stlread('grousered_wheel2mm.STL');
+TRG = stlread('wheel model/grousered_wheel2mm.STL');
 trisurf(TRG);
 daspect([1 1 1]);
 
@@ -31,12 +31,12 @@ daspect([1 1 1]);
 Points = Points_grousered;
 Normals = Normals_grousered;
 Area = Area_grousered;
-save('grousered_wheel_125.mat','Points','Normals','Area')
+save('data/grousered_wheel_125.mat','Points','Normals','Area')
 
 
 
 %% smooth wheel
-TRS = stlread('smooth_wheel2mm.STL');
+TRS = stlread('wheel model/smooth_wheel2mm.STL');
 figure
 trisurf(TRS);
 daspect([1 1 1]);
@@ -65,7 +65,7 @@ daspect([1 1 1]);
 Points = Points_smooth;
 Normals = Normals_smooth;
 Area = Area_smooth;
-save('smooth_wheel_125.mat','Points','Normals','Area')
+save('data/smooth_wheel_125.mat','Points','Normals','Area')
 
 
 

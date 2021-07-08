@@ -2,6 +2,29 @@
 % Qishun Yu Catherine Pavlov
 % 02/21/2021
 
+global A00 A10 B11 B01 BM11 C11 C01 CM11 D10 M a1 a2 a3 a4 b1 b2 b3 b4
+A00 = 0.206;
+A10 = 0.169;
+B11 = 0.212;
+B01 = 0.358;
+BM11 = 0.055;
+C11 = -0.124;
+C01 = 0.253;
+CM11 = 0.007;
+D10 = 0.088;
+
+a1 = 0.44;
+a2 = 3.62;
+a3 = 1.61;
+a4 = 0.41;
+
+b1 = 1.99;
+b2 = 1.61;
+b3 = 0.97;
+b4 = 4.31;
+
+M = [A00, A10, B11, B01, BM11, C11, C01, CM11, D10];
+
 % load experiment data
 load('data/all_smooth_data_2.mat')
 
@@ -20,6 +43,7 @@ plotForce = 1;
 plotVelocity = 0;
 plotGeometry = 0;
 
+
 %% SET parameters
 % SET slip angle
 slipAngle = pi/2;
@@ -35,27 +59,25 @@ radius = 62.5;
 % SET scaling factor
 sf = 1;
 
-%% run all slip conditions
-% runData(all_results, pointList, normalList, areaList, vcenter, radius, sf)
-
-%% Geometry & Velocity Calc
+%% Single RFT calc
+% Geometry & Velocity Calc
 tic
 [e1List, e2List, vList, vHoriList, v1List, v23List, phi] = calc_velocity(normalList, pointList, wr, vcenter, radius, slipAngle);
 
-%% Force Calc
+% Force Calc
 [betaList, gammaList] = calc_BetaGamma(normalList, e2List, v23List);
 [Force, netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
 toc
 
 % transfer to experiment result frame
-Fsidewall = -Force(1);
 Ftractive = Force(2);
+Fsidewall = -Force(1);
 Fload = Force(3);
 
-
-
-
-
+%% run all slip conditions
+tic 
+runData(all_results, pointList, normalList, areaList, vcenter, radius, sf)
+toc
 %% plot force
 if plotForce == 1
     figure
@@ -77,7 +99,7 @@ end
 
 %% plot velocity
 
-gapSize = 2;
+gapSize = 20;
 if plotVelocity == 1
     
     
@@ -133,7 +155,7 @@ if plotGeometry == 1
 
 end
 
-%% Functions
+
 
 function runData(all_results, pointList, normalList, areaList, vcenter, radius, sf)
 for i=1:length(all_results)
@@ -147,10 +169,10 @@ for i=1:length(all_results)
     slipAngle = result.beta * pi / 180;
     % angular velocity radius/s
 
-    %% Geometry & Velocity Calc
+    % Geometry & Velocity Calc
     [e1List, e2List, vList, vHoriList, v1List, v23List, phi] = calc_velocity(normalList, pointList, wr, vcenter, radius, slipAngle);
 
-    %% Force Calc
+    % Force Calc
     [betaList, gammaList] = calc_BetaGamma(normalList, e2List, v23List);
     [Force, netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
 
@@ -165,7 +187,6 @@ save('output/RFToutput.mat','RFToutput');
 end
 
 function [Force,netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
-
 % depth = sand with respect to the center of the wheel mm
 depth = -radius + sinkage;
 
@@ -176,17 +197,11 @@ numofForce = size(forcePoints, 2);
 forceBeta = betaList(idx);
 forceGamma = gammaList(idx);
 
-
-[ay1, ~] = calc_rft_alpha(0, 0, sf);
-ax23  = zeros(1,numofForce);
-az23 = zeros(1,numofForce);
+[ay1, ~] = calc_rft_alpha_new(0, 0, sf);
 
 ay1 = zeros(1,numofForce)+ay1;
 
-for i = 1:numofForce
-    [ax23(i),az23(i)] = calc_rft_alpha(forceBeta(i),forceGamma(i), sf);
-end
-
+[ax23, az23] = calc_rft_alpha_new(forceBeta, forceGamma, sf);
 magF1 = -ay1 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3);
 magF2 = -ax23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3);
 % F1 force in N
@@ -283,16 +298,7 @@ end
 % Compute f1, f23 from v1 v23 v
 % the sigmoid functions are from [Treers et al., 2021]
 function [f1, f23] = normalScale(phi)
-a1 = 0.44;
-a2 = 3.62;
-a3 = 1.61;
-a4 = 0.41;
-
-b1 = 1.99;
-b2 = 1.61;
-b3 = 0.97;
-b4 = 4.31;
-
+global a1 a2 a3 a4 b1 b2 b3 b4
 idx1 = (phi > pi/2 & phi <= pi);
 idx2 = (phi < 0 & phi >= -pi/2);
 idx3 = (phi < -pi/2 & phi >= -pi);
@@ -327,51 +333,85 @@ end
 
 % find the local alphax and alphaz with give gamma and beta
 % return alpha in N/(cm^3)
-function [alphaX, alphaZ] = calc_rft_alpha(beta,gamma, sf)
+function [alphaX, alphaZ] = calc_rft_alpha_new(beta,gamma, sf)
 % using discrete Fourier transform fitting function [Li et al., 2013]
 % Fourier coefficients M
 % granular medium: generic coefficient
 % define (-1 as M1 for simplicity)
-A00 = 0.206;
-A10 = 0.169;
-B11 = 0.212;
-B01 = 0.358;
-BM11 = 0.055;
-C11 = -0.124;
-C01 = 0.253;
-CM11 = 0.007;
-D10 = 0.088;
-M = [A00, A10, B11, B01, BM11, C11, C01, CM11, D10];
 
+global M
 beta = wrapToPi(beta);
 gamma = wrapToPi(gamma);
-if beta >= -pi && beta <= -pi/2
-    beta = beta + pi;
-elseif beta >= pi/2 && beta <= pi
-    beta = beta - pi;
-end
+
+idxb1 = (beta >= -pi & beta <= -pi/2);
+idxb2 = (beta >= pi/2 & beta <= pi);
+
+beta(idxb1) = beta(idxb1) + pi;
+beta(idxb2) = beta(idxb2) - pi;
 beta = wrapToPi(beta);
+
+
+idxg1 = (gamma >= -pi & gamma <= -pi/2);
+idxg2 = (gamma >= pi/2 & gamma <= pi);
+
+beta(idxg1) = -beta(idxg1);
+beta(idxg2) = -beta(idxg2);
+
+gamma(idxg1) = -pi - gamma(idxg1);
+gamma(idxg2) = pi - gamma(idxg2);
+
 gamma = wrapToPi(gamma);
-if gamma >= -pi && gamma <= -pi/2
-    alphaZ = sf*(M(1)*cos(0)+M(2)*cos(2*(-beta))+M(3)*sin(2*(-beta)+(-pi-gamma))...
-        +M(4)*sin((-pi-gamma))+M(5)*sin((-2*(-beta))+(-pi-gamma)));
-    alphaX = -sf*(M(6)*cos(2*(-beta)+(-pi-gamma))+M(7)*cos((-pi-gamma))...
-        +M(8)*sin(-2*(-beta)+(-pi-gamma))+M(9)*sin(2*(-beta)));
-elseif gamma >= pi/2 && gamma <= pi
-    alphaZ = sf*(M(1)*cos(0)+M(2)*cos(2*(-beta))+M(3)*sin(2*(-beta)+(pi-gamma))...
-        +M(4)*sin((pi-gamma))+M(5)*sin((-2*(-beta))+(pi-gamma)));
-    alphaX = -sf*(M(6)*cos(2*(-beta)+(pi-gamma))+M(7)*cos((pi-gamma))...
-        +M(8)*sin(-2*(-beta)+(pi-gamma))+M(9)*sin(2*(-beta)));
-else
-    alphaZ = sf*(M(1)*cos(0)+M(2)*cos(2*beta)+M(3)*sin(2*beta+gamma)...
-        +M(4)*sin(gamma)+M(5)*sin((-2*beta)+gamma));
-    alphaX = sf*(M(6)*cos(2*beta+gamma)+M(7)*cos(gamma)...
-        +M(8)*sin(-2*beta+gamma)+M(9)*sin(2*beta));
+
+alphaZ = sf .* (M(1) .* cos(0) ...
+    + M(2) .* cos(2 .* beta)...
+    + M(3) .* sin(2 .* beta + gamma)...
+    + M(4) .* sin(gamma)...
+    + M(5) .* sin((-2 .* beta) + gamma));
+alphaX = sf .* (M(6) .* cos(2 .* beta + gamma)...
+    + M(7) .* cos(gamma)...
+    + M(8) .* sin(-2 .* beta + gamma)...
+    + M(9) .* sin(2 .* beta));
+
+alphaX(idxg1) = -alphaX(idxg1);
+alphaX(idxg2) = -alphaX(idxg2);
 end
 
-end
+
+
 
 %UNUSED FUNCTIONS
+
+% function [alphaX, alphaZ] = calc_rft_alpha_old(beta,gamma, sf)
+% global M
+% 
+% beta = wrapToPi(beta);
+% gamma = wrapToPi(gamma);
+% if beta >= -pi && beta <= -pi/2
+%     beta = beta + pi;
+% elseif beta >= pi/2 && beta <= pi
+%     beta = beta - pi;
+% end
+% beta = wrapToPi(beta);
+% gamma = wrapToPi(gamma);
+% if gamma >= -pi && gamma <= -pi/2
+%     alphaZ = sf*(M(1)*cos(0)+M(2)*cos(2*(-beta))+M(3)*sin(2*(-beta)+(-pi-gamma))...
+%         +M(4)*sin((-pi-gamma))+M(5)*sin((-2*(-beta))+(-pi-gamma)));
+%     alphaX = -sf*(M(6)*cos(2*(-beta)+(-pi-gamma))+M(7)*cos((-pi-gamma))...
+%         +M(8)*sin(-2*(-beta)+(-pi-gamma))+M(9)*sin(2*(-beta)));
+% elseif gamma >= pi/2 && gamma <= pi
+%     alphaZ = sf*(M(1)*cos(0)+M(2)*cos(2*(-beta))+M(3)*sin(2*(-beta)+(pi-gamma))...
+%         +M(4)*sin((pi-gamma))+M(5)*sin((-2*(-beta))+(pi-gamma)));
+%     alphaX = -sf*(M(6)*cos(2*(-beta)+(pi-gamma))+M(7)*cos((pi-gamma))...
+%         +M(8)*sin(-2*(-beta)+(pi-gamma))+M(9)*sin(2*(-beta)));
+% else
+%     alphaZ = sf*(M(1)*cos(0)+M(2)*cos(2*beta)+M(3)*sin(2*beta+gamma)...
+%         +M(4)*sin(gamma)+M(5)*sin((-2*beta)+gamma));
+%     alphaX = sf*(M(6)*cos(2*beta+gamma)+M(7)*cos(gamma)...
+%         +M(8)*sin(-2*beta+gamma)+M(9)*sin(2*beta));
+% end
+% 
+% end
+
 
 % [e1List, e2List] = calc_e1e2(normalList);
 % [vList, vHoriList, v1List, v23List] = calc_Vel(pointList, w, radius, e1List, vcor);
