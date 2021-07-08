@@ -2,7 +2,8 @@
 % Qishun Yu Catherine Pavlov
 % 02/21/2021
 
-global A00 A10 B11 B01 BM11 C11 C01 CM11 D10 M a1 a2 a3 a4 b1 b2 b3 b4
+% global variables for calc_alpha and calc normal_scale
+global M a1 a2 a3 a4 b1 b2 b3 b4
 A00 = 0.206;
 A10 = 0.169;
 B11 = 0.212;
@@ -12,26 +13,24 @@ C11 = -0.124;
 C01 = 0.253;
 CM11 = 0.007;
 D10 = 0.088;
+M = [A00, A10, B11, B01, BM11, C11, C01, CM11, D10];
 
 a1 = 0.44;
 a2 = 3.62;
 a3 = 1.61;
 a4 = 0.41;
-
 b1 = 1.99;
 b2 = 1.61;
 b3 = 0.97;
 b4 = 4.31;
-
-M = [A00, A10, B11, B01, BM11, C11, C01, CM11, D10];
 
 % load experiment data
 load('data/all_smooth_data_2.mat')
 
 % load wheel point data
 
-% wheeldata = matfile('data/smooth_wheel_125.mat');
-wheeldata = matfile('data/grousered_wheel_125.mat');
+wheeldata = matfile('data/smooth_wheel_125.mat');
+% wheeldata = matfile('data/grousered_wheel_125.mat');
 % wheeldata = matfile('data/plate.mat');
 
 pointList = wheeldata.Points;
@@ -39,14 +38,16 @@ areaList = wheeldata.Area;
 normalList = wheeldata.Normals;
 
 % 1 for plot 0 for not plot
-plotForce = 1;
+plotForce = 0;
 plotVelocity = 0;
 plotGeometry = 0;
 
+% 1 for run all data 
+runData_toggle = 1;
 
 %% SET parameters
 % SET slip angle
-slipAngle = pi/2;
+slipAngle = pi/4;
 % SET velocity of the center of rotation of the body mm/s
 vcenter = 10;
 % SET wheel rotational speed mm/s
@@ -55,15 +56,15 @@ wr = 0.001;
 sinkage = 20;
 % SET radius
 radius = 62.5;
-% radius = 17;
+
 % SET scaling factor
 sf = 1;
 
 %% Single RFT calc
+
 % Geometry & Velocity Calc
 tic
 [e1List, e2List, vList, vHoriList, v1List, v23List, phi] = calc_velocity(normalList, pointList, wr, vcenter, radius, slipAngle);
-
 % Force Calc
 [betaList, gammaList] = calc_BetaGamma(normalList, e2List, v23List);
 [Force, netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
@@ -75,9 +76,15 @@ Fsidewall = -Force(1);
 Fload = Force(3);
 
 %% run all slip conditions
-tic 
-runData(all_results, pointList, normalList, areaList, vcenter, radius, sf)
-toc
+
+if runData_toggle == 1
+    
+    h = waitbar(0,'Initializing waitbar...');
+    runData(all_results, pointList, normalList, areaList, vcenter, radius, sf, h);
+   
+end
+
+
 %% plot force
 if plotForce == 1
     figure
@@ -157,7 +164,7 @@ end
 
 
 
-function runData(all_results, pointList, normalList, areaList, vcenter, radius, sf)
+function runData(all_results, pointList, normalList, areaList, vcenter, radius, sf, h)
 for i=1:length(all_results)
     result = all_results(i);
     wr = result.Vry;
@@ -179,10 +186,15 @@ for i=1:length(all_results)
     Fsidewall = -Force(1);
     Ftractive = Force(2);
     Fload = Force(3);
-    RFToutput(i) = struct('ForceX', Ftractive, 'ForceY',Fsidewall , 'ForceZ', Fload, 'wr', result.Vry, 'depth', result.avg_Z, 'beta', result.beta, 'slip', result.slip); 
-    i
+    RFToutput(i) = struct('ForceX', Ftractive, 'ForceY', Fsidewall , 'ForceZ', Fload, 'wr', result.Vry, 'depth', result.avg_Z, 'beta', result.beta, 'slip', result.slip); 
+    waitbar(i/length(all_results), h, 'In progress...')
 end
+waitbar(1,h,'Completed.');
+disp("Done.");
+
+close(h);
 save('output/RFToutput.mat','RFToutput');
+
 
 end
 
@@ -190,6 +202,8 @@ function [Force,netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1L
 % depth = sand with respect to the center of the wheel mm
 depth = -radius + sinkage;
 
+
+% find points below the surface of the soil
 idx = pointList(3,:) < depth;
 forcePoints = pointList(:, idx);
 numofForce = size(forcePoints, 2);
@@ -197,18 +211,17 @@ numofForce = size(forcePoints, 2);
 forceBeta = betaList(idx);
 forceGamma = gammaList(idx);
 
-[ay1, ~] = calc_rft_alpha_new(0, 0, sf);
+[ay1, ~] = calc_rft_alpha(0, 0, sf);
 
 ay1 = zeros(1,numofForce)+ay1;
 
-[ax23, az23] = calc_rft_alpha_new(forceBeta, forceGamma, sf);
+[ax23, az23] = calc_rft_alpha(forceBeta, forceGamma, sf);
 magF1 = -ay1 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3);
 magF2 = -ax23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3);
 % F1 force in N
 F1tilde = magF1 .* e1List(:,idx);
 F2tilde = magF2 .* e2List(:,idx);
 F2tilde(3,:) = az23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10^-3);
-
 
 
 phiList = phi(idx);
@@ -241,7 +254,7 @@ e2List = [e2List(1, :) ./ magne2;
     e2List(2, :) ./ magne2;
     e2List(3, :) ./ magne2;];
 
-% element radius to the center information (1*n)
+% velocity
 rList = sqrt(pointList(2,:).^2 + pointList(3,:).^2);   
 angleList = atan2(pointList(3, :), pointList(2, :)) + pi/2;
 
@@ -249,11 +262,11 @@ vx = zeros([1, size(angleList, 2)]) + vcor(1);
 vy = cos(angleList) .* rList .* w + vcor(2);
 vz = sin(angleList) .* rList .* w + vcor(3);
 
-% velocity
 vList = [vx; 
     vy; 
     vz];
 
+% horizontal velocity
 vHoriList = [vx; vy; zeros(1, size(angleList, 2))];
 idxV = (vHoriList(1, :) == 0 & vHoriList(2, :) == 0);
 vHoriList(2, :) = 1 .* idxV + vHoriList(2, :) .* (~idxV);
@@ -333,7 +346,7 @@ end
 
 % find the local alphax and alphaz with give gamma and beta
 % return alpha in N/(cm^3)
-function [alphaX, alphaZ] = calc_rft_alpha_new(beta,gamma, sf)
+function [alphaX, alphaZ] = calc_rft_alpha(beta,gamma, sf)
 % using discrete Fourier transform fitting function [Li et al., 2013]
 % Fourier coefficients M
 % granular medium: generic coefficient
