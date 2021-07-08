@@ -5,9 +5,7 @@
 % load experiment data
 load('data/all_smooth_data_2.mat')
 
-% points (3*n) data.Points
-% area (1*n) data.Area
-% normal vectors (3*n) data.Normals
+% load wheel point data
 
 % wheeldata = matfile('data/smooth_wheel_125.mat');
 wheeldata = matfile('data/grousered_wheel_125.mat');
@@ -17,7 +15,7 @@ pointList = wheeldata.Points;
 areaList = wheeldata.Area;
 normalList = wheeldata.Normals;
 
-% 1 for plot 0 for not
+% 1 for plot 0 for not plot
 plotForce = 1;
 plotVelocity = 0;
 plotGeometry = 0;
@@ -38,19 +36,16 @@ radius = 62.5;
 sf = 1;
 
 %% run all slip conditions
-runData(all_results, pointList, normalList, areaList, vcenter, radius, sf)
-tic
+% runData(all_results, pointList, normalList, areaList, vcenter, radius, sf)
+
 %% Geometry & Velocity Calc
+tic
 [e1List, e2List, vList, vHoriList, v1List, v23List, phi] = calc_velocity(normalList, pointList, wr, vcenter, radius, slipAngle);
 
 %% Force Calc
 [betaList, gammaList] = calc_BetaGamma(normalList, e2List, v23List);
 [Force, netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
 toc
-% transfer force in wheel frame to global frame
-% ForceX = Force(1) * cos(slipAngle) + Force(2) * sin(slipAngle)
-% ForceY = -Force(1) * sin(slipAngle) + Force(2) * cos(slipAngle)
-% ForceZ = Force(3)
 
 % transfer to experiment result frame
 Fsidewall = -Force(1);
@@ -158,11 +153,6 @@ for i=1:length(all_results)
     %% Force Calc
     [betaList, gammaList] = calc_BetaGamma(normalList, e2List, v23List);
     [Force, netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
-
-    % transfer force in wheel frame to global frame
-%     ForceX = Force(1) * cos(slipAngle) + Force(2) * sin(slipAngle);
-%     ForceY = -Force(1) * sin(slipAngle) + Force(2) * cos(slipAngle);
-%     ForceZ = Force(3);
 
     Fsidewall = -Force(1);
     Ftractive = Force(2);
@@ -310,14 +300,6 @@ idx3 = (phi < -pi/2 & phi >= -pi);
 phi(idx1) = pi - phi(idx1);
 phi(idx2) = -phi(idx2);
 phi(idx3) = phi(idx3) + pi;
-
-% if phi > pi/2 && phi <= pi
-%     phi = pi-phi;
-% elseif phi < 0 && phi >= -pi/2
-%     phi = -phi;
-% elseif phi < -pi/2 && phi >= -pi
-%     phi = phi + pi;
-% end
 
 v1v = sin(phi);
 v23v = cos(phi);
