@@ -1,4 +1,4 @@
-load('RFToutput.mat')
+load('output/RFToutput.mat')
 
 %% Forces Figure
 figure()

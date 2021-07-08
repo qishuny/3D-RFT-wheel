@@ -3,7 +3,7 @@
 % 02/21/2021
 
 % load experiment data
-load('all_smooth_data_2.mat')
+load('data/all_smooth_data_2.mat')
 
 % points (3*n) data.Points
 % area (1*n) data.Area
@@ -38,7 +38,7 @@ radius = 62.5;
 sf = 1;
 
 %% run all slip conditions
-% runData(all_results, pointList, normalList, areaList, vcenter, radius, sf)
+runData(all_results, pointList, normalList, areaList, vcenter, radius, sf)
 tic
 %% Geometry & Velocity Calc
 [e1List, e2List, vList, vHoriList, v1List, v23List, phi] = calc_velocity(normalList, pointList, wr, vcenter, radius, slipAngle);
@@ -138,26 +138,6 @@ if plotGeometry == 1
 
 end
 
-% figure
-% for k =1:25:size(forcePoints,2)
-%     plot3(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),'ok','MarkerFaceColor',[0,0.5,0.5])
-%     hold on
-% %     text(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),string(forceBeta(k)*180/pi))
-%     text(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),string(forceGamma(k)*180/pi))
-% %     hold on
-%     quiver3(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),forceV23(1,k),forceV23(2,k),forceV23(3,k),0.05,'Color', [0,0.2,0.8]);
-% end
-% daspect([1 1 1])
-
-% plot alphaz
-% figure
-% for k = 1 : 25 : size(forcePoints, 2)
-%     plot3(forcePoints(1,k),forcePoints(2,k),forcePoints(3,k),'ok','MarkerFaceColor',[0,0.5,0.5])
-%     hold on 
-%     text(forcePoints(1, k),forcePoints(2, k),forcePoints(3, k),string(az23(1, k)));
-% end
-% daspect([1 1 1]);
-
 %% Functions
 
 function runData(all_results, pointList, normalList, areaList, vcenter, radius, sf)
@@ -180,16 +160,17 @@ for i=1:length(all_results)
     [Force, netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
 
     % transfer force in wheel frame to global frame
-    ForceX = Force(1) * cos(slipAngle) + Force(2) * sin(slipAngle);
-    ForceY = -Force(1) * sin(slipAngle) + Force(2) * cos(slipAngle);
-    ForceZ = Force(3);
+%     ForceX = Force(1) * cos(slipAngle) + Force(2) * sin(slipAngle);
+%     ForceY = -Force(1) * sin(slipAngle) + Force(2) * cos(slipAngle);
+%     ForceZ = Force(3);
+
     Fsidewall = -Force(1);
     Ftractive = Force(2);
     Fload = Force(3);
     RFToutput(i) = struct('ForceX', Ftractive, 'ForceY',Fsidewall , 'ForceZ', Fload, 'wr', result.Vry, 'depth', result.avg_Z, 'beta', result.beta, 'slip', result.slip); 
     i
 end
-save('RFToutput.mat','RFToutput');
+save('output/RFToutput.mat','RFToutput');
 
 end
 
@@ -224,12 +205,9 @@ F2tilde = magF2 .* e2List(:,idx);
 F2tilde(3,:) = az23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10^-3);
 
 
-f1List = zeros(1,size(F1tilde,2));
-f2List = zeros(1,size(F2tilde,2));
+
 phiList = phi(idx);
-for i = 1:size(F1tilde,2)
-    [f1List(i),f2List(i)] = normalScale(phiList(i));
-end
+[f1List,f2List] = normalScale(phiList);
 
 netForce = f1List .* F1tilde + f2List .* F2tilde;
 Force = sum(netForce,2);
@@ -325,26 +303,32 @@ b2 = 1.61;
 b3 = 0.97;
 b4 = 4.31;
 
+idx1 = (phi > pi/2 & phi <= pi);
+idx2 = (phi < 0 & phi >= -pi/2);
+idx3 = (phi < -pi/2 & phi >= -pi);
 
+phi(idx1) = pi - phi(idx1);
+phi(idx2) = -phi(idx2);
+phi(idx3) = phi(idx3) + pi;
 
-if phi > pi/2 && phi <= pi
-    phi = pi-phi;
-elseif phi < 0 && phi >= -pi/2
-    phi = -phi;
-elseif phi < -pi/2 && phi >= -pi
-    phi = phi + pi;
-end
+% if phi > pi/2 && phi <= pi
+%     phi = pi-phi;
+% elseif phi < 0 && phi >= -pi/2
+%     phi = -phi;
+% elseif phi < -pi/2 && phi >= -pi
+%     phi = phi + pi;
+% end
 
 v1v = sin(phi);
 v23v = cos(phi);
 
-F1 = a1 * tanh(a2 * v1v - a3) + a4;
-F23 = b1 * atanh(b2 * v23v - b3) + b4;
-F1max = a1 * tanh(a2 * sin(pi/2) - a3) + a4;
-F23max = b1 * atanh(b2 * cos(0) - b3) + b4;
+F1 = a1 .* tanh(a2 .* v1v - a3) + a4;
+F23 = b1 .* atanh(b2 .* v23v - b3) + b4;
+F1max = a1 .* tanh(a2 .* sin(pi/2) - a3) + a4;
+F23max = b1 .* atanh(b2 .* cos(0) - b3) + b4;
 
-f1 = F1 / F1max;
-f23 = F23 / F23max;
+f1 = F1 ./ F1max;
+f23 = F23 ./ F23max;
 end
 
 
