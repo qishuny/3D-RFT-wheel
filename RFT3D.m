@@ -80,8 +80,9 @@ Fload = Force(3);
 if runData_toggle == 1
     
     h = waitbar(0,'Initializing waitbar...');
+    tic
     runData(all_results, pointList, normalList, areaList, vcenter, radius, sf, h);
-   
+    toc
 end
 
 
@@ -177,16 +178,20 @@ for i=1:length(all_results)
     % angular velocity radius/s
 
     % Geometry & Velocity Calc
-    [e1List, e2List, vList, vHoriList, v1List, v23List, phi] = calc_velocity(normalList, pointList, wr, vcenter, radius, slipAngle);
+    [e1List, e2List, ~, ~, ~, v23List, phi] = ...
+        calc_velocity(normalList, pointList, wr, vcenter, radius, slipAngle);
 
     % Force Calc
     [betaList, gammaList] = calc_BetaGamma(normalList, e2List, v23List);
-    [Force, netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
+    [Force, ~, ~] = ...
+        calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
 
     Fsidewall = -Force(1);
     Ftractive = Force(2);
     Fload = Force(3);
-    RFToutput(i) = struct('ForceX', Ftractive, 'ForceY', Fsidewall , 'ForceZ', Fload, 'wr', result.Vry, 'depth', result.avg_Z, 'beta', result.beta, 'slip', result.slip); 
+    RFToutput(i) = struct('ForceX', Ftractive, 'ForceY', Fsidewall , ...
+        'ForceZ', Fload, 'wr', result.Vry, ...
+        'depth', result.avg_Z, 'beta', result.beta, 'slip', result.slip); 
     waitbar(i/length(all_results), h, 'In progress...')
 end
 waitbar(1,h,'Completed.');
@@ -220,10 +225,11 @@ magF1 = -ay1 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3);
 magF2 = -ax23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3);
 % F1 force in N
 F1tilde = magF1 .* e1List(:,idx);
+% F2 force in N
 F2tilde = magF2 .* e2List(:,idx);
 F2tilde(3,:) = az23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10^-3);
 
-
+% scaling factor for angles
 phiList = phi(idx);
 [f1List,f2List] = normalScale(phiList);
 
