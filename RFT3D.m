@@ -103,14 +103,9 @@ if plotForce == 1
     daspect([1 1 1])
 end
 
-
-
 %% plot velocity
-
 gapSize = 20;
-if plotVelocity == 1
-    
-    
+if plotVelocity == 1  
     %Plot selected velocity and v1,v23
     figure
     for k =1:gapSize:size(pointList,2)
@@ -124,7 +119,6 @@ if plotVelocity == 1
     end
 
     % Plot v23 and e2
-
     figure
     for k =1:gapSize:size(pointList,2)
         quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e2List(1,k),e2List(2,k),e2List(3,k),'g');
@@ -146,12 +140,10 @@ if plotVelocity == 1
     end
 end
 
-
 %% Plot geometry
 if plotGeometry == 1  
     %Plot selected normal vector and e1,e2
     figure
-    
     plot3(pointList(1,:),pointList(2,:),pointList(3,:),'ok','MarkerFaceColor',[0,0.5,0.5])
     hold on
     quiver3(pointList(1,:),pointList(2,:),pointList(3,:),normalList(1,:),normalList(2,:),normalList(3,:),10,'Color', [0,0.2,0.8]);
@@ -159,11 +151,7 @@ if plotGeometry == 1
     quiver3(pointList(1,:),pointList(2,:),pointList(3,:),e2List(1,:),e2List(2,:),e2List(3,:),10,'g');
     legend('point','normal vector','e1 axis','e2 axis')
     daspect([1 1 1])
-    
-
 end
-
-
 
 function runData(all_results, pointList, normalList, areaList, vcenter, radius, sf, h)
 for i=1:length(all_results)
@@ -175,7 +163,7 @@ for i=1:length(all_results)
     sinkage = abs(result.avg_Z);
 %     sinkage = 20;
     slipAngle = result.beta * pi / 180;
-    % angular velocity radius/s
+    
 
     % Geometry & Velocity Calc
     [e1List, e2List, ~, ~, ~, v23List, phi] = ...
@@ -207,7 +195,6 @@ function [Force,netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1L
 % depth = sand with respect to the center of the wheel mm
 depth = -radius + sinkage;
 
-
 % find points below the surface of the soil
 idx = pointList(3,:) < depth;
 forcePoints = pointList(:, idx);
@@ -218,8 +205,8 @@ forceGamma = gammaList(idx);
 
 [ay1, ~] = calc_rft_alpha(0, 0, sf);
 
-ay1 = zeros(1,numofForce)+ay1;
-
+ay1 = zeros(1,numofForce) + ay1;
+ 
 [ax23, az23] = calc_rft_alpha(forceBeta, forceGamma, sf);
 magF1 = -ay1 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3);
 magF2 = -ax23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3);
@@ -234,7 +221,7 @@ phiList = phi(idx);
 [f1List,f2List] = normalScale(phiList);
 
 netForce = f1List .* F1tilde + f2List .* F2tilde;
-Force = sum(netForce,2);
+Force = sum(netForce, 2);
 end
 
 
@@ -261,7 +248,7 @@ e2List = [e2List(1, :) ./ magne2;
     e2List(3, :) ./ magne2;];
 
 % velocity
-rList = sqrt(pointList(2,:).^2 + pointList(3,:).^2);   
+rList = sqrt(pointList(2, :) .^ 2 + pointList(3, :) .^ 2);   
 angleList = atan2(pointList(3, :), pointList(2, :)) + pi/2;
 
 vx = zeros([1, size(angleList, 2)]) + vcor(1);
@@ -355,8 +342,6 @@ end
 function [alphaX, alphaZ] = calc_rft_alpha(beta,gamma, sf)
 % using discrete Fourier transform fitting function [Li et al., 2013]
 % Fourier coefficients M
-% granular medium: generic coefficient
-% define (-1 as M1 for simplicity)
 
 global M
 beta = wrapToPi(beta);
@@ -394,8 +379,6 @@ alphaX = sf .* (M(6) .* cos(2 .* beta + gamma)...
 alphaX(idxg1) = -alphaX(idxg1);
 alphaX(idxg2) = -alphaX(idxg2);
 end
-
-
 
 
 %UNUSED FUNCTIONS
