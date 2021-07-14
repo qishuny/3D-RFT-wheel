@@ -38,7 +38,7 @@ areaList = wheeldata.Area;
 normalList = wheeldata.Normals;
 
 % 1 for plot 0 for not plot
-plotForce = 0;
+plotForce = 1;
 plotVelocity = 0;
 plotGeometry = 0;
 
@@ -93,14 +93,10 @@ if plotForce == 1
 
     hold on 
 
-    quiver3(0, 0, 0, 10, 0, 0, 'r');
-    text(10,0,0,'x')
-    quiver3(0, 0, 0, 0, 10, 0, 'g');
-    text(0, 10, 0,'y')
-    quiver3(0, 0, 0, 0, 0, 10, 'y');
-    text(0, 0, 10,'z')
     legend('force');
     daspect([1 1 1])
+    view(-55,15)
+    axis off
 end
 
 %% plot velocity
