@@ -67,7 +67,7 @@ tic
 [e1List, e2List, vList, vHoriList, v1List, v23List, phi] = calc_velocity(normalList, pointList, wr, vcenter, radius, slipAngle);
 % Force Calc
 [betaList, gammaList] = calc_BetaGamma(normalList, e2List, v23List);
-[Force, netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
+[Force, netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf, slipAngle);
 toc
 
 % transfer to experiment result frame
@@ -156,9 +156,9 @@ for i=1:length(all_results)
     if wr == 0
         wr = 0.00001;
     end  
-    sinkage = abs(result.avg_Z);
+    sinkage = abs(result.avg_Z)
 %     sinkage = 20;
-    slipAngle = result.beta * pi / 180;
+    slipAngle = result.beta * pi / 180
     
 
     % Geometry & Velocity Calc
@@ -168,7 +168,7 @@ for i=1:length(all_results)
     % Force Calc
     [betaList, gammaList] = calc_BetaGamma(normalList, e2List, v23List);
     [Force, ~, ~] = ...
-        calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
+        calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf, slipAngle);
 
     Fsidewall = -Force(1);
     Ftractive = Force(2);
@@ -181,7 +181,7 @@ for i=1:length(all_results)
         'beta', result.beta, ...
         'slip', result.slip); 
     
-    waitbar(i/length(all_results), h, 'In progress...')
+    waitbar(i/length(all_results), h, 'In progress...',sprintf('%12.9f',i))
 end
 waitbar(1,h,'Completed.');
 disp("Done.");
@@ -192,12 +192,15 @@ save('output/RFToutput.mat','RFToutput');
 
 end
 
-function [Force,netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
+function [Force, netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf, slipAngle);
 % depth = sand with respect to the center of the wheel mm
 depth = -radius + sinkage;
 
 % find points below the surface of the soil
-idx = pointList(3,:) < depth;
+
+[idx, depthList] = run_extractHmap(pointList, slipAngle * 180 / pi, abs(depth / 1000));
+% idx = pointList(3,:) < depth;
+% depthList = abs(depth - pointList(3,idx));
 forcePoints = pointList(:, idx);
 numofForce = size(forcePoints, 2);
 
@@ -209,13 +212,13 @@ forceGamma = gammaList(idx);
 ay1 = zeros(1,numofForce) + ay1;
  
 [ax23, az23] = calc_rft_alpha(forceBeta, forceGamma, sf);
-magF1 = -ay1 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3);
-magF2 = -ax23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3);
+magF1 = -ay1 .* depthList .* (areaList(idx) .* 10 ^ -3);
+magF2 = -ax23 .* depthList .* (areaList(idx) .* 10 ^ -3);
 % F1 force in N
 F1tilde = magF1 .* e1List(:,idx);
 % F2 force in N
 F2tilde = magF2 .* e2List(:,idx);
-F2tilde(3,:) = az23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10^-3);
+F2tilde(3,:) = az23 .* depthList .* (areaList(idx) .* 10^-3);
 
 % scaling factor for angles
 phiList = phi(idx);

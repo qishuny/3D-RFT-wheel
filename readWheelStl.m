@@ -106,22 +106,22 @@ function [Points, Area, Normals] = trimSmooth(Points, Area, Normals)
 Points(1,:) = Points(1,:)-62.5;
 Points(2,:) = Points(2,:)-62.5;
 
-idx1 = Points(3,:)<59.9;
+idx1 = Points(3,:) < 59.9;
 
-Points = Points(:,idx1);
+Points = Points(:, idx1);
 Area = Area(idx1);
-Normals = Normals(:,idx1);
+Normals = Normals(:, idx1);
 
-size(Points,2)
+size(Points, 2)
 
-radius = (Points(1,:).^2+Points(2,:).^2);
-idx2 =(radius<(61^2)) & (Points(3,:)>0);
+radius = (Points(1, :).^ 2 + Points(2, :) .^ 2);
+idx2 =(radius < (61 ^ 2)) & (Points(3, :) > 0);
 
-Points = Points(:,~idx2);
+Points = Points(:, ~idx2);
 Area = Area(~idx2);
-Normals = Normals(:,~idx2);
+Normals = Normals(:, ~idx2);
 
-size(Points,2)
+size(Points, 2)
 end
 
 function [Points, Area, Normals] = trimGrousered(Points, Area, Normals)
