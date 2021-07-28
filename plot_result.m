@@ -6,21 +6,21 @@ figure()
 sgtitle ('Wheel Forces')
 subplot(1,3,2)
 title('Fy (Sidewall)')
-axis([-1.1 1 -150 50])
+xlim([-1.1 1])
 hold on
 xlabel('Slip Ratio')
 ylabel('Force (N)')
 
 subplot(1,3,1)
 title('Fx (Tractive)')
-axis([-1.1 1 -150 175])
+xlim([-1.1 1])
 hold on
 xlabel('Slip Ratio')
 ylabel('Force (N)')
 
 subplot(1,3,3)
 title('Fz (Load)')
-axis([-1.1 1 0 200])
+xlim([-1.1 1])
 hold on
 xlabel('Slip Ratio')
 ylabel('Force (N)')
