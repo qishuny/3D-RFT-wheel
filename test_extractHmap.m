@@ -20,7 +20,7 @@ gridsize = 1/n;
 
 
 % 1 for plot all values
-plotToggle = 0;
+plotToggle = 1;
 
 tic
 [sandHmap, wheelPos] = extractHmap((90 - slipAngle), wheelDiameter, wheelWidth, depth, n);

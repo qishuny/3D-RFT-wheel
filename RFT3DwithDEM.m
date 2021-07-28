@@ -38,7 +38,7 @@ areaList = wheeldata.Area;
 normalList = wheeldata.Normals;
 
 % 1 for plot 0 for not plot
-plotForce = 1;
+plotForce = 0;
 plotVelocity = 0;
 plotGeometry = 0;
 
@@ -53,7 +53,7 @@ vcenter = 10;
 % SET wheel rotational speed mm/s
 wr = 0.001;
 % SET sinkage mm
-sinkage = 20;
+sinkage = 54;
 % SET radius
 radius = 62.5;
 
@@ -198,7 +198,7 @@ depth = -radius + sinkage;
 
 % find points below the surface of the soil
 
-[idx, depthList] = run_extractHmap(pointList, slipAngle * 180 / pi, abs(depth / 1000));
+[idx, depthList] = run_extractHmap(pointList, slipAngle * 180 / pi, abs(sinkage / 1000));
 % idx = pointList(3,:) < depth;
 % depthList = abs(depth - pointList(3,idx));
 forcePoints = pointList(:, idx);
