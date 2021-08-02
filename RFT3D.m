@@ -209,7 +209,7 @@ forceGamma = gammaList(idx);
 ay1 = zeros(1,numofForce) + ay1;
  
 
-% scaling factor
+% scaling factor for depth
 coeff1 = 1.915315192989908e+03;
 coeff2 = 1.364833809455482;
 [sfList] = calc_sf(abs(depth - pointList(3,idx)), coeff1, coeff2);
