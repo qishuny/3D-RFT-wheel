@@ -208,14 +208,20 @@ forceGamma = gammaList(idx);
 
 ay1 = zeros(1,numofForce) + ay1;
  
+
+% scaling factor
+coeff1 = 1.915315192989908e+03;
+coeff2 = 1.364833809455482;
+[sfList] = calc_sf(abs(depth - pointList(3,idx)), coeff1, coeff2);
+
 [ax23, az23] = calc_rft_alpha(forceBeta, forceGamma, sf);
-magF1 = -ay1 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3);
-magF2 = -ax23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3);
+magF1 = -ay1 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3) .* sfList;
+magF2 = -ax23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3) .* sfList;
 % F1 force in N
 F1tilde = magF1 .* e1List(:,idx);
 % F2 force in N
 F2tilde = magF2 .* e2List(:,idx);
-F2tilde(3,:) = az23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10^-3);
+F2tilde(3,:) = az23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10^-3) .* sfList;
 
 % scaling factor for angles
 phiList = phi(idx);
@@ -326,7 +332,10 @@ f1 = F1 ./ F1max;
 f23 = F23 ./ F23max;
 end
 
-
+function [sfList] = calc_sf(depth, coeff1, coeff2)
+    depth = depth .* 0.001;
+    sfList = coeff1 .* (depth .^ coeff2) ./ depth ./ 1000;
+end
 function angles = calc_Angles(v1, v2)
 dotprd =v1(1, :) .* v2(1, :) + v1(2, :) .* v2(2, :) + v1(3, :) .* v2(3, :);
 timeprd = sqrt(v1(1, :) .^2 + v1(2, :) .^ 2 ...
