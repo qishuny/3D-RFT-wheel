@@ -1,4 +1,4 @@
-
+close all
 wheeldata = matfile('data/smooth_wheel_125.mat');
 pointList = wheeldata.Points;
 
@@ -87,8 +87,8 @@ SandHmapnew(idx) = max(SandHmapnew(idx), -depth);
 % SandHmapnew(idx) = -depth;
 
 
-
-[Points_inflated] = inflate(pointListOriginal, wheelDiameter, wheelWidth, gap);
+Points_inflated = pointListOriginal;
+% [Points_inflated] = inflate(pointListOriginal, wheelDiameter, wheelWidth, gap);
 [Points_inflated] = rotateZ(Points_inflated, -slipAngle * pi/180);
 
 spz = interp2(Xtrimed, Ytrimed, SandHmapnew, Points_inflated(1,:)', Points_inflated(2,:)');
