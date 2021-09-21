@@ -25,7 +25,7 @@ b3 = 0.97;
 b4 = 4.31;
 
 % load experiment data
-load('data/all_smooth_data_2.mat')
+load('output/all_smooth_data_2.mat')
 
 % load wheel point data
 
@@ -38,12 +38,12 @@ areaList = wheeldata.Area;
 normalList = wheeldata.Normals;
 
 % 1 for plot 0 for not plot
-plotForce = 0;
+plotForce = 1;
 plotVelocity = 0;
 plotGeometry = 0;
 
 % 1 for run all data 
-runData_toggle = 1;
+runData_toggle = 0;
 
 %% SET parameters
 % SET slip angle
@@ -156,9 +156,9 @@ for i=1:length(all_results)
     if wr == 0
         wr = 0.00001;
     end  
-    sinkage = abs(result.avg_Z)
+    sinkage = abs(result.avg_Z);
 %     sinkage = 20;
-    slipAngle = result.beta * pi / 180
+    slipAngle = result.beta * pi / 180;
     
 
     % Geometry & Velocity Calc
@@ -199,6 +199,8 @@ depth = -radius + sinkage;
 % find points below the surface of the soil
 
 [idx, depthList] = run_extractHmap(pointList, slipAngle * 180 / pi, abs(sinkage / 1000));
+
+sum(idx)
 % idx = pointList(3,:) < depth;
 % depthList = abs(depth - pointList(3,idx));
 forcePoints = pointList(:, idx);
@@ -244,13 +246,15 @@ numofNormal = size(normalList, 2);
 e2List = [normalList(1, :);
     normalList(2, :);
     zeros(1, numofNormal)];
-idxe2 = (e2List(1, :) == 0 & e2List(2, :) == 0);
-e2List(2,:) = 1 .* idxe2 + e2List(2,:) .* (~idxe2);
 magne2 = sqrt(e2List(1, :) .^2 + e2List(2, :) .^2 + e2List(3, :) .^2);
 e2List = [e2List(1, :) ./ magne2;
     e2List(2, :) ./ magne2;
     e2List(3, :) ./ magne2;];
 
+idx2 = (abs(e2List(1, :)) > abs(e2List(2,:)));
+temp2 = e2List(1, idx2);
+e2List(1, idx2) = e2List(2, idx2);
+e2List(2, idx2) = temp2;
 % velocity
 rList = sqrt(pointList(2, :) .^ 2 + pointList(3, :) .^ 2);   
 angleList = atan2(pointList(3, :), pointList(2, :)) + pi/2;

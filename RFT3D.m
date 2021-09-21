@@ -51,7 +51,7 @@ slipAngle = 0;
 % SET velocity of the center of rotation of the body mm/s
 vcenter = 10;
 % SET wheel rotational speed mm/s
-wr = 0.001;
+wr = 100;
 % SET sinkage mm
 sinkage = 20;
 % SET radius
@@ -126,7 +126,10 @@ if plotVelocity == 1
 %     end
 
     %Plot v1 and e1
-    figure
+%     figure
+%     
+%     idxS = pointList(3,:) < -62.49;
+%     plot3(pointList(1,idxS),pointList(2,idxS),pointList(3,idxS),'ok','MarkerFaceColor',[0,0.5,0.5])
 %     for k =1:gapSize:size(pointList,2)
 %         quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e1List(1,k),e1List(2,k),e1List(3,k),'g');
 %         hold on
@@ -248,12 +251,14 @@ numofNormal = size(normalList, 2);
 e2List = [normalList(1, :);
     normalList(2, :);
     zeros(1, numofNormal)];
-idxe2 = (e2List(1, :) == 0 & e2List(2, :) == 0);
-e2List(1,:) = 1 .* idxe2 + e2List(2,:) .* (~idxe2);
 magne2 = sqrt(e2List(1, :) .^2 + e2List(2, :) .^2 + e2List(3, :) .^2);
 e2List = [e2List(1, :) ./ magne2;
     e2List(2, :) ./ magne2;
     e2List(3, :) ./ magne2;];
+idx2 = (abs(e2List(1, :)) > abs(e2List(2,:)));
+temp2 = e2List(1, idx2);
+e2List(1, idx2) = e2List(2, idx2);
+e2List(2, idx2) = temp2;
 
 % velocity
 rList = sqrt(pointList(2, :) .^ 2 + pointList(3, :) .^ 2);   

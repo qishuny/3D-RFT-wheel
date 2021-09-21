@@ -5,7 +5,7 @@ pointList = wheeldata.Points;
 pointList(1,:) = pointList(1,:) - 30;
 pointListOriginal = pointList;
 % slipAngle in degree
-slipAngle = 90;
+slipAngle = 45;
 
 wheelDiameter = 0.125; %m
 wheelWidth = 0.06; %m
@@ -87,14 +87,15 @@ SandHmapnew(idx) = max(SandHmapnew(idx), -depth);
 % SandHmapnew(idx) = -depth;
 
 
-Points_inflated = pointListOriginal;
-% [Points_inflated] = inflate(pointListOriginal, wheelDiameter, wheelWidth, gap);
+% Points_inflated = pointListOriginal;
+[Points_inflated] = inflate(pointListOriginal, wheelDiameter, wheelWidth, gap);
 [Points_inflated] = rotateZ(Points_inflated, -slipAngle * pi/180);
 
 spz = interp2(Xtrimed, Ytrimed, SandHmapnew, Points_inflated(1,:)', Points_inflated(2,:)');
 spz = spz';
 
 under = Points_inflated(3,:) < spz;
+sum(under)
 depthList = abs(spz(under) - Points_inflated(3,under));
 
 
