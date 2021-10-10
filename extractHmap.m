@@ -52,15 +52,12 @@ BodyPose = PoseContext([],bodyxpos,bodyypos,bodyzpos,bodytheta);
 % 1) the x,y position of each points
 
 %half the radius of wheel
-x_width = wheelDiameter/2;
-
+x_width = wheelDiameter/2;  
 % wheel x points
 xgrid = -x_width:Sand.get_dx/2:x_width; 
 
 %wheel's fatness
 y_length = wheelWidth/2; 
-
-
 % wheel y points
 ygrid = -y_length:Sand.get_dx/2:y_length; 
 

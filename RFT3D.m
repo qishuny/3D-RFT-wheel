@@ -38,12 +38,12 @@ areaList = wheeldata.Area;
 normalList = wheeldata.Normals;
 
 % 1 for plot 0 for not plot
-plotForce = 1;
-plotVelocity = 1;
-plotGeometry = 1;
+plotForce = 0;
+plotVelocity = 0;
+plotGeometry = 0;
 
 % 1 for run Catherine's data 
-runData_toggle = 0;
+runData_toggle = 1;
 
 %% SET parameters
 % SET slip angle
@@ -221,12 +221,17 @@ coeff2 = 1.364833809455482;
 [ax23, az23] = calc_rft_alpha(forceBeta, forceGamma, sf);
 magF1 = -ay1 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3) .* sfList;
 magF2 = -ax23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3) .* sfList;
+
 % F1 force in N
 F1tilde = magF1 .* e1List(:,idx);
 % F2 force in N
 F2tilde = magF2 .* e2List(:,idx);
 F2tilde(3,:) = az23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10^-3) .* sfList;
 
+% % scale by 0.8
+% F1tilde = 0.8 .* F1tilde;
+% F2tilde = 0.8 .* F2tilde;
+ 
 % scaling factor for angles
 phiList = phi(idx);
 [f1List,f2List] = normalScale(phiList);

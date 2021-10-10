@@ -113,7 +113,6 @@ classdef Hmap < handle
                 ymin = this.optIdx(2,1); ymax = this.optIdx(2,2); 
                 % new index for the corresponding matrix!
                 bl_idx = this.blocked_idx - [xmin-1; ymin-1];
-                
                 this.matrix(xmin:xmax,ymin:ymax) = ...
                     mtx_method_update_height(this.matrix(xmin:xmax,ymin:ymax),this.get_dx,bl_idx,this.dT);
             else 

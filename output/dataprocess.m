@@ -1,5 +1,5 @@
 load('output/all_smooth_data_2.mat')
-load('output/RFTDEMoutput.mat')
+load('output/RFToutput.mat')
 
 x = [-1 -0.7 -0.5 -0.2 0 0.23 0.5 0.75 0.9];
 
