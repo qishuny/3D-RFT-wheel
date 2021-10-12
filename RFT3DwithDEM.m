@@ -38,12 +38,12 @@ areaList = wheeldata.Area;
 normalList = wheeldata.Normals;
 
 % 1 for plot 0 for not plot
-plotForce = 1;
+plotForce = 0;
 plotVelocity = 0;
 plotGeometry = 0;
 
 % 1 for run all data 
-runData_toggle = 0;
+runData_toggle = 1;
 
 %% SET parameters
 % SET slip angle
@@ -187,7 +187,7 @@ waitbar(1,h,'Completed.');
 disp("Done.");
 
 close(h);
-save('output/RFToutput.mat','RFToutput');
+save('output/RFTDEMoutput.mat','RFToutput');
 
 
 end
