@@ -39,8 +39,8 @@ close all
 
 [X, Y] = meshgrid(-400:gap:400, -400:gap:400);
 
-
-
+figure()
+surf(X, Y, sandHmap, 'FaceAlpha', 0.5)
 
 
 
@@ -106,7 +106,7 @@ depthList = abs(spz(under) - Points_inflated(3,under));
 
 
 
-if plotToggle == 1
+if plotToggle == 1surf(X, Y, sandHmap, 'FaceAlpha', 0.5)
     % plot simluation result: sand height map & wheel position
     figure
     s = surf(X, Y, sandHmap);

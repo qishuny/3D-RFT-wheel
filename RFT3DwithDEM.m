@@ -198,7 +198,12 @@ depth = -radius + sinkage;
 
 % find points below the surface of the soil
 
-[idx, depthList] = run_extractHmap(pointList, slipAngle * 180 / pi, abs(sinkage / 1000));
+
+% old method
+% [idx, depthList] = run_extractHmap(pointList, slipAngle * 180 / pi, abs(sinkage / 1000));
+
+% new fit method
+[idx, depthList] = run_extractHmapFit(pointList, slipAngle * 180 / pi, abs(sinkage / 1000));
 % idx = pointList(3,:) < depth;
 % depthList = abs(depth - pointList(3,idx));
 forcePoints = pointList(:, idx);

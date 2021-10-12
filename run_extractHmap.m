@@ -54,7 +54,7 @@ idxY = Y(:, 1) >(wheelPos(2) - lim) & Y(:, 1) < (wheelPos(2) + lim);
 Y = Y - wheelPos(2);
 sandHmap = sandHmap - wheelPos(3);
 
-wheelPos(3) = 0;
+wheelPos(3) = 0;max(wheeldata.Points(1,:))
 
 Xtrimed = X(idxY, idxX);
 Ytrimed = Y(idxY, idxX);
