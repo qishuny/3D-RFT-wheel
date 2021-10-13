@@ -156,9 +156,9 @@ for i=1:length(all_results)
     if wr == 0
         wr = 0.00001;
     end  
-    sinkage = abs(result.avg_Z)
+    sinkage = abs(result.avg_Z);
 %     sinkage = 20;
-    slipAngle = result.beta * pi / 180
+    slipAngle = result.beta * pi / 180;
     
 
     % Geometry & Velocity Calc
@@ -187,7 +187,7 @@ waitbar(1,h,'Completed.');
 disp("Done.");
 
 close(h);
-save('output/RFTDEMoutput.mat','RFToutput');
+save('output/RFTDEMsameDepthoutput.mat','RFToutput');
 
 
 end
@@ -200,10 +200,11 @@ depth = -radius + sinkage;
 
 
 % old method
-% [idx, depthList] = run_extractHmap(pointList, slipAngle * 180 / pi, abs(sinkage / 1000));
+[idx, depthList] = run_extractHmap(pointList, slipAngle * 180 / pi, abs(sinkage / 1000));
 
 % new fit method
-[idx, depthList] = run_extractHmapFit(pointList, slipAngle * 180 / pi, abs(sinkage / 1000));
+% [idx, depthList] = run_extractHmapFit(pointList, slipAngle * 180 / pi, abs(sinkage / 1000));
+% [idx, depthList] = run_extractHmapFitSmooth(pointList, slipAngle * 180 / pi, abs(sinkage / 1000));
 % idx = pointList(3,:) < depth;
 % depthList = abs(depth - pointList(3,idx));
 forcePoints = pointList(:, idx);
@@ -216,19 +217,40 @@ forceGamma = gammaList(idx);
 
 ay1 = zeros(1,numofForce) + ay1;
  
+% % scaling factor for depth
+% coeff1 = 1.915315192989908e+03;
+% coeff2 = 1.364833809455482;
+% [sfList] = calc_sf(depthList, coeff1, coeff2);
+% 
+% [ax23, az23] = calc_rft_alpha(forceBeta, forceGamma, sf);
+% magF1 = -ay1 .* depthList .* (areaList(idx) .* 10 ^ -3) .* sfList;
+% magF2 = -ax23 .* depthList .* (areaList(idx) .* 10 ^ -3) .* sfList;
+% % F1 force in N
+% F1tilde = magF1 .* e1List(:,idx);
+% % F2 force in N
+% F2tilde = magF2 .* e2List(:,idx);
+% F2tilde(3,:) = az23 .* depthList .* (areaList(idx) .* 10^-3) .* sfList;
+% 
+% % scaling factor for angles
+% phiList = phi(idx);
+% [f1List,f2List] = normalScale(phiList);
+% 
+% netForce = f1List .* F1tilde + f2List .* F2tilde;
+% Force = sum(netForce, 2);
+
 % scaling factor for depth
 coeff1 = 1.915315192989908e+03;
 coeff2 = 1.364833809455482;
-[sfList] = calc_sf(abs(depth - pointList(3,idx)), coeff1, coeff2);
+[sfList] = calc_sf(abs(depth-pointList(3,idx)), coeff1, coeff2);
 
 [ax23, az23] = calc_rft_alpha(forceBeta, forceGamma, sf);
-magF1 = -ay1 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3) .* sfList;
-magF2 = -ax23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3) .* sfList;
+magF1 = -ay1 .* abs(depth-pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3) .* sfList;
+magF2 = -ax23 .* abs(depth-pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3) .* sfList;
 % F1 force in N
 F1tilde = magF1 .* e1List(:,idx);
 % F2 force in N
 F2tilde = magF2 .* e2List(:,idx);
-F2tilde(3,:) = az23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10^-3) .* sfList;
+F2tilde(3,:) = az23 .* abs(depth-pointList(3,idx)) .* (areaList(idx) .* 10^-3) .* sfList;
 
 % scaling factor for angles
 phiList = phi(idx);

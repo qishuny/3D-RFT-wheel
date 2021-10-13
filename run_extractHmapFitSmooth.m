@@ -1,11 +1,10 @@
 
-wheeldata = matfile('data/smooth_wheel_125.mat');
-pointList = wheeldata.Points;
+
+function [idxOut, depthList] = run_extractHmapFitSmooth(pointList, slipAngle, depth)
 
 pointList(1,:) = pointList(1,:) - 0.5*(max(pointList(1,:))-min(pointList(1,:)));
 pointListOriginal = pointList;
-% slipAngle in degree
-slipAngle = 90;
+
 
 wheelDiameter = 0.125; %m
 wheelWidth = 0.06; %m
@@ -39,18 +38,18 @@ close all
 
 [X, Y] = meshgrid(-400:gap:400, -400:gap:400);
 
-surf(X, Y, sandHmap, 'FaceAlpha', 0.5)
-%     plot simluation result: sand height map & wheel position
-figure
-s = surf(X, Y, sandHmap);
-s.EdgeColor = 'none';
-hold on
-scatter3(wheelPos(1), wheelPos(2), wheelPos(3),'r')
-axis on
-xlabel('x')
-ylabel('y')
-axis equal
-%% line up the wheel and the sand height map
+% surf(X, Y, sandHmap, 'FaceAlpha', 0.5)
+% %     plot simluation result: sand height map & wheel position
+% figure
+% s = surf(X, Y, sandHmap);
+% s.EdgeColor = 'none';
+% hold on
+% scatter3(wheelPos(1), wheelPos(2), wheelPos(3),'r')
+% axis on
+% xlabel('x')
+% ylabel('y')
+% axis equal
+% %% line up the wheel and the sand height map
 
 lim = sqrt((wheelDiameter / 2) ^ 2 + (wheelWidth / 2) ^ 2) + 10;
 idxX = X(1, :) >(wheelPos(1) - lim) & X(1, :) < (wheelPos(1) + lim);
@@ -89,16 +88,16 @@ idxWheelY = Yqr(:, :) <= wheelDiameter/ 2  + 2& Yqr(:, :) >= - wheelDiameter/ 2 
 idx = idxWheelX & idxWheelY;
 SandHmapnew = SandHmapOriginal;
 
-% SandHmapnew(idx) = max(SandHmapnew(idx), -depth);
-SandHmapnew(idx) = -100;
+SandHmapnew(idx) = max(SandHmapnew(idx), -depth);
+% SandHmapnew(idx) = -100;
 % SandHmapnew(idx) = -depth;
 
 
 x = reshape(Xtrimed,[],1);
 y = reshape(Ytrimed,[],1);
 z = reshape(SandHmapnew,[],1);
-f1 = fit([x y],z,'poly55', 'Exclude', z <= -99);
-% f1 = fit([x y],z,'lowess', 'Exclude', z <= -99);
+f1 = fit([x y],z,'poly55');
+
 for i = 1:size(Xtrimed,1)
     for j = 1:size(Xtrimed,2)
         
@@ -106,83 +105,37 @@ for i = 1:size(Xtrimed,1)
     end
 end
 
-figure
-plot(f1, [x y], z, 'Exclude', z <= -99 );
 
-figure
-s = surf(Xtrimed, Ytrimed, SandHmapnew, 'FaceAlpha', 0.5);
-title("sand height map of slip angle", slipAngle)
+
 pointListOriginal = rotateZ(pointListOriginal, -slipAngle * pi/180);
 spz = interp2(Xtrimed, Ytrimed, SandHmapnew, pointListOriginal(1,:)', pointListOriginal(2,:)');
 spz = spz';
 
+
+
 under = pointListOriginal(3,:) < spz;
 depthList = abs(spz(under) - pointListOriginal(3,under));
 
-figure
-plot3(pointListOriginal(1,under), pointListOriginal(2,under), pointListOriginal(3,under),'.','Color','r','MarkerSize',1);
-hold on
-plot3(pointListOriginal(1,~under), pointListOriginal(2,~under), pointListOriginal(3,~under),'.','Color',[0.8,0.8,0.8],'MarkerSize',1);
-s = surf(Xtrimed, Ytrimed, SandHmapnew, 'FaceAlpha', 0.5);
-s.EdgeColor = 'none';
-axis equal
-
-
-
-
+idxOut = under;
 
 
 
 
 if plotToggle == 1
-    surf(X, Y, sandHmap, 'FaceAlpha', 0.5)
-    % plot simluation result: sand height map & wheel position
     figure
-    s = surf(X, Y, sandHmap);
-    s.EdgeColor = 'none';
-    hold on
-    scatter3(wheelPos(1), wheelPos(2), wheelPos(3),'r')
-    axis on
-    xlabel('x')
-    ylabel('y')
-    axis equal
+    plot(f1, [x y], z);
 
+    figure
+    s = surf(Xtrimed, Ytrimed, SandHmapnew, 'FaceAlpha', 0.5);
     
-    % plot orignial sand height map
     figure
-
-    plot3(pointList(1,:), pointList(2,:), pointList(3,:), '.', ...
-        'Color', [0.0,0.0,0.0], 'MarkerSize', 1)
+    plot3(pointListOriginal(1,under), pointListOriginal(2,under), pointListOriginal(3,under),'.','Color','r','MarkerSize',1);
     hold on
-    surf(Xtrimed, Ytrimed, SandHmapnew, 'FaceAlpha', 0.5)
-
-    axis on
-    xlabel('x')
-    ylabel('y')
-    axis equal
-    
-    % plot inflated wheel and modified sand height map
-    figure
-    plot3(Points_inflated(1,under), Points_inflated(2,under), Points_inflated(3,under),'.','Color','r','MarkerSize',1);
-    hold on
-    plot3(Points_inflated(1,~under), Points_inflated(2,~under), Points_inflated(3,~under),'.','Color',[0.8,0.8,0.8],'MarkerSize',1);
+    plot3(pointListOriginal(1,~under), pointListOriginal(2,~under), pointListOriginal(3,~under),'.','Color',[0.8,0.8,0.8],'MarkerSize',1);
     s = surf(Xtrimed, Ytrimed, SandHmapnew, 'FaceAlpha', 0.5);
     s.EdgeColor = 'none';
     axis equal
-    
-    % check depth of the wheel
-%     forcePoints = Points_inflated(:, under);
-%     figure
-%     testG = 100;
-%     for i = 1:testG:size(forcePoints,2)
-%         plot3(forcePoints(1,i), forcePoints(2,i), forcePoints(3,i),'.','Color','r','MarkerSize',1);
-%         hold on
-%         text(forcePoints(1,i),forcePoints(2,i),forcePoints(3,i),string(depthList(i)));
-% 
-%     end
-%     s = surf(Xtrimed, Ytrimed, SandHmapnew, 'FaceAlpha', 0.5);
-    
-    % plot wheel points above & below the sand
+
    
 end
 
@@ -204,3 +157,5 @@ Points_inflated(1,:) = Points(1,:) .* scaleX;
 Points_inflated(2,:) = Points(2,:) .* scaleY;
 Points_inflated(3,:) = Points(3,:);
 end 
+
+end

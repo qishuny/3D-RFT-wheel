@@ -5,7 +5,7 @@ pointList = wheeldata.Points;
 pointList(1,:) = pointList(1,:) - 0.5*(max(pointList(1,:))-min(pointList(1,:)));
 pointListOriginal = pointList;
 % slipAngle in degree
-slipAngle = 90;
+slipAngle = 45;
 
 wheelDiameter = 0.125; %m
 wheelWidth = 0.06; %m
@@ -89,16 +89,16 @@ idxWheelY = Yqr(:, :) <= wheelDiameter/ 2  + 2& Yqr(:, :) >= - wheelDiameter/ 2 
 idx = idxWheelX & idxWheelY;
 SandHmapnew = SandHmapOriginal;
 
-% SandHmapnew(idx) = max(SandHmapnew(idx), -depth);
-SandHmapnew(idx) = -100;
+SandHmapnew(idx) = max(SandHmapnew(idx), -depth);
+% SandHmapnew(idx) = -100;
 % SandHmapnew(idx) = -depth;
 
 
 x = reshape(Xtrimed,[],1);
 y = reshape(Ytrimed,[],1);
 z = reshape(SandHmapnew,[],1);
-f1 = fit([x y],z,'poly55', 'Exclude', z <= -99);
-% f1 = fit([x y],z,'lowess', 'Exclude', z <= -99);
+f1 = fit([x y],z,'lowess');
+
 for i = 1:size(Xtrimed,1)
     for j = 1:size(Xtrimed,2)
         
@@ -107,7 +107,7 @@ for i = 1:size(Xtrimed,1)
 end
 
 figure
-plot(f1, [x y], z, 'Exclude', z <= -99 );
+plot(f1, [x y], z);
 
 figure
 s = surf(Xtrimed, Ytrimed, SandHmapnew, 'FaceAlpha', 0.5);

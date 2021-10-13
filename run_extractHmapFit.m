@@ -1,6 +1,6 @@
 
 
-function [idx, depthList] = run_extractHmapFit(pointList, slipAngle, depth)
+function [idxOut, depthList] = run_extractHmapFit(pointList, slipAngle, depth)
 
 pointList(1,:) = pointList(1,:) - 0.5*(max(pointList(1,:))-min(pointList(1,:)));
 pointListOriginal = pointList;
@@ -38,18 +38,18 @@ close all
 
 [X, Y] = meshgrid(-400:gap:400, -400:gap:400);
 
-surf(X, Y, sandHmap, 'FaceAlpha', 0.5)
-%     plot simluation result: sand height map & wheel position
-figure
-s = surf(X, Y, sandHmap);
-s.EdgeColor = 'none';
-hold on
-scatter3(wheelPos(1), wheelPos(2), wheelPos(3),'r')
-axis on
-xlabel('x')
-ylabel('y')
-axis equal
-%% line up the wheel and the sand height map
+% surf(X, Y, sandHmap, 'FaceAlpha', 0.5)
+% %     plot simluation result: sand height map & wheel position
+% figure
+% s = surf(X, Y, sandHmap);
+% s.EdgeColor = 'none';
+% hold on
+% scatter3(wheelPos(1), wheelPos(2), wheelPos(3),'r')
+% axis on
+% xlabel('x')
+% ylabel('y')
+% axis equal
+% %% line up the wheel and the sand height map
 
 lim = sqrt((wheelDiameter / 2) ^ 2 + (wheelWidth / 2) ^ 2) + 10;
 idxX = X(1, :) >(wheelPos(1) - lim) & X(1, :) < (wheelPos(1) + lim);
@@ -97,6 +97,7 @@ x = reshape(Xtrimed,[],1);
 y = reshape(Ytrimed,[],1);
 z = reshape(SandHmapnew,[],1);
 f1 = fit([x y],z,'poly55', 'Exclude', z <= -99);
+% f1 = fit([x y],z,'lowess', 'Exclude', z <= -99);
 
 for i = 1:size(Xtrimed,1)
     for j = 1:size(Xtrimed,2)
@@ -111,10 +112,12 @@ pointListOriginal = rotateZ(pointListOriginal, -slipAngle * pi/180);
 spz = interp2(Xtrimed, Ytrimed, SandHmapnew, pointListOriginal(1,:)', pointListOriginal(2,:)');
 spz = spz';
 
+
+
 under = pointListOriginal(3,:) < spz;
 depthList = abs(spz(under) - pointListOriginal(3,under));
 
-
+idxOut = under;
 
 
 
