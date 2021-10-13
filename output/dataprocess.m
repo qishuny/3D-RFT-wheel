@@ -131,6 +131,86 @@ Fx_rft_avg = Fx_rft_avg';
 Fy_rft_avg = Fy_rft_avg';
 Fz_rft_avg = Fz_rft_avg';
 
+deltaX = 0;
+deltaY = 0;
+deltaZ = 0;
+
+R_xlist =[];
+R_ylist =[];
+R_zlist =[];
+
+for i = 1:7
+    
+
+    Xe = 0;
+    Xm = 0;
+    XeXm = 0;
+    Xe2 = 0;
+    Xm2 = 0;
+
+    Ye = 0;
+    Ym = 0;
+    YeYm = 0;
+    Ye2 = 0;
+    Ym2 = 0;
+
+    Ze = 0;
+    Zm = 0;
+    ZeZm = 0;
+    Ze2 = 0;
+    Zm2 = 0;
+    for j = 1:9
+        
+        exp_x = Fx_avg(i, j);
+        exp_y = Fy_avg(i, j);
+        exp_z = Fz_avg(i, j);
+        
+        rft_x = Fx_rft_avg(i,j);
+        rft_y = Fy_rft_avg(i,j);
+        rft_z = Fz_rft_avg(i,j);
+        
+        deltaX = deltaX + abs(exp_x - rft_x);
+        deltaY = deltaY + abs(exp_y - rft_y);
+        deltaZ = deltaZ + abs(exp_z - rft_z);
+        
+        Xe = Xe + exp_x;
+        Ye = Ye + exp_y;
+        Ze = Ze + exp_z;
+
+        Xm = Xm + rft_x;
+        Ym = Ym + rft_y;
+        Zm = Zm + rft_z;
+
+        XeXm = XeXm + exp_x * rft_x;
+        YeYm = YeYm + exp_y * rft_y;
+        ZeZm = ZeZm + exp_z * rft_z;
+
+        Xe2 = Xe2 + exp_x * exp_x;
+        Ye2 = Ye2 + exp_y * exp_y;
+        Ze2 = Ze2 + exp_z * exp_z;
+
+        Xm2 = Xm2 + rft_x * rft_x;
+        Ym2 = Ym2 + rft_y * rft_y;
+        Zm2 = Zm2 + rft_z * rft_z;
+    end
+    
+    XR = (9 * XeXm - Xe * Xm)/(sqrt(9 * Xe2 - Xe * Xe) * sqrt(9 * Xm2 - Xm * Xm));
+    YR = (9 * YeYm - Ye * Ym)/(sqrt(9 * Ye2 - Ye * Ye) * sqrt(9 * Ym2 - Ym * Ym));
+    ZR = (9 * ZeZm - Ze * Zm)/(sqrt(9 * Ze2 - Ze * Ze) * sqrt(9 * Zm2 - Zm * Zm));
+    R_xlist = [R_xlist XR];
+    R_ylist = [R_ylist YR];
+    R_zlist = [R_zlist ZR];
+    
+end
+
+deltaX =deltaX / 63
+deltaY =deltaY / 63
+deltaZ =deltaZ / 63
+R_xlist
+R_ylist
+R_zlist
+
+
 figure()
 sgtitle ('Wheel Forces Comparison between 3D-RFT and Experiment Results')
 subplot(1,3,2)
