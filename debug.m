@@ -3,11 +3,11 @@ wheeldata = matfile('data/smooth_wheel_125.mat');
 pointList = wheeldata.Points;
 
 % pointList(1,:) = pointList(1,:) - 30;
-depth = 0.04; %m
+% depth = 0.04; %m
 
 slipAngle = 45;
 
-[idx, depthList] = run_extractHmap(pointList, slipAngle, depth);
+% [idx, depthList] = run_extractHmap(pointList, slipAngle, depth);
 % v1 = [0.011764507331288; 0.011764507331288; 0.676209435691110]
 % v2 = [-0.707106781186548; -0.707106781186548; 0]
 % 
@@ -24,3 +24,15 @@ slipAngle = 45;
 % angles = acos(dotprd ./ timeprd);
 % angles = real(angles);
 % end
+coeff1 = 1.915315192989908e+03;
+coeff2 = 1.364833809455482;
+
+depth = linspace(0, 80, 1000);
+sfList = calc_sf(depth, coeff1, coeff2);
+sf = mean(sfList)
+figure()
+plot(depth, sfList)
+function [sfList] = calc_sf(depth, coeff1, coeff2)
+    depth = depth .* 0.001;
+    sfList = coeff1 .* (depth .^ coeff2) ./ depth ./ 1000;
+end

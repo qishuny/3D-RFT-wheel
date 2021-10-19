@@ -58,7 +58,7 @@ sinkage = 20;
 radius = 62.5;
 
 % SET scaling factor
-sf = 1;
+sf = 0.5588/0.8;
 
 %% Single RFT calc
 
@@ -173,7 +173,7 @@ for i=1:length(all_results)
     % Force Calc
     [betaList, gammaList] = calc_BetaGamma(normalList, e2List, v23List);
     [Force, ~, ~] = ...
-        calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
+        calc_3D_rft_sf(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
 
     Fsidewall = -Force(1);
     Ftractive = Force(2);
@@ -192,7 +192,7 @@ waitbar(1,h,'Completed.');
 disp("Done.");
 
 close(h);
-save('output/RFToutput.mat','RFToutput');
+save('output/RFTsfoutput.mat','RFToutput');
 
 
 end
@@ -218,6 +218,7 @@ ay1 = zeros(1,numofForce) + ay1;
 coeff1 = 1.915315192989908e+03;
 coeff2 = 1.364833809455482;
 [sfList] = calc_sf(abs(depth - pointList(3,idx)), coeff1, coeff2);
+mean(sfList)
 [ax23, az23] = calc_rft_alpha(forceBeta, forceGamma, sf);
 magF1 = -ay1 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3) .* sfList;
 magF2 = -ax23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3) .* sfList;
@@ -240,6 +241,46 @@ netForce = f1List .* F1tilde + f2List .* F2tilde;
 Force = sum(netForce, 2);
 end
 
+function [Force,netForce, idx] = calc_3D_rft_sf(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
+% depth = sand with respect to the center of the wheel mm
+depth = -radius + sinkage;
+
+% find points below the surface of the soil
+idx = pointList(3,:) < depth;
+forcePoints = pointList(:, idx);
+numofForce = size(forcePoints, 2);
+
+forceBeta = betaList(idx);
+forceGamma = gammaList(idx);
+
+[ay1, ~] = calc_rft_alpha(0, 0, sf);
+
+ay1 = zeros(1,numofForce) + ay1;
+ 
+
+% scaling factor for depth
+
+[ax23, az23] = calc_rft_alpha(forceBeta, forceGamma, sf);
+magF1 = -ay1 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3) .* sf;
+magF2 = -ax23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3) .* sf;
+
+% F1 force in N
+F1tilde = magF1 .* e1List(:,idx);
+% F2 force in N
+F2tilde = magF2 .* e2List(:,idx);
+F2tilde(3,:) = az23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10^-3) .* sf;
+
+% % scale by 0.8
+% F1tilde = 0.8 .* F1tilde;
+% F2tilde = 0.8 .* F2tilde;
+ 
+% scaling factor for angles
+phiList = phi(idx);
+[f1List,f2List] = normalScale(phiList);
+
+netForce = f1List .* F1tilde + f2List .* F2tilde;
+Force = sum(netForce, 2);
+end
 
 
 function [e1List, e2List, vList, vHoriList, v1List, v23List, phi] = calc_velocity(normalList, pointList, wr, vcenter, radius, slipAngle)
