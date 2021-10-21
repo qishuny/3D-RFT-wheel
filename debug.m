@@ -6,6 +6,8 @@ pointList = wheeldata.Points;
 % depth = 0.04; %m
 
 slipAngle = 45;
+depth = -20;
+[idxOut, depthList, pile, under] = run_extractHmapFitTest(pointList, slipAngle, depth);
 
 % [idx, depthList] = run_extractHmap(pointList, slipAngle, depth);
 % v1 = [0.011764507331288; 0.011764507331288; 0.676209435691110]
@@ -24,15 +26,15 @@ slipAngle = 45;
 % angles = acos(dotprd ./ timeprd);
 % angles = real(angles);
 % end
-coeff1 = 1.915315192989908e+03;
-coeff2 = 1.364833809455482;
-
-depth = linspace(0, 80, 1000);
-sfList = calc_sf(depth, coeff1, coeff2);
-sf = mean(sfList)
-figure()
-plot(depth, sfList)
-function [sfList] = calc_sf(depth, coeff1, coeff2)
-    depth = depth .* 0.001;
-    sfList = coeff1 .* (depth .^ coeff2) ./ depth ./ 1000;
-end
+% coeff1 = 1.915315192989908e+03;
+% coeff2 = 1.364833809455482;
+% 
+% depth = linspace(0, 80, 1000);
+% sfList = calc_sf(depth, coeff1, coeff2);
+% sf = mean(sfList)
+% figure()
+% plot(depth, sfList)
+% function [sfList] = calc_sf(depth, coeff1, coeff2)
+%     depth = depth .* 0.001;
+%     sfList = coeff1 .* (depth .^ coeff2) ./ depth ./ 1000;
+% end
