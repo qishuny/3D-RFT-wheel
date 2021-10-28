@@ -9,9 +9,9 @@
 
 % file_name = 'smooth_wheel_150.DXF';
 %
-% file_name = '/wheel model/Rover_wheel_printable_straight.DXF';
-% pos = read_dxf(file_name);
-% pos = pos./10;
+file_name = 'Rover_wheel_printable_straight.DXF';
+pos = read_dxf(file_name);
+pos = pos./10;
 
 % pos = makecircle(35);
 

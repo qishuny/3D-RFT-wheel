@@ -216,7 +216,7 @@ R_zlist
 
 
 figure()
-sgtitle ('Wheel Forces Comparison between 3D-RFT and Experiment Results')
+sgtitle ('Wheel Forces Comparison between 3D-RFT+DEM and Experiment Results')
 subplot(1,3,2)
 title('Fy (Sidewall)')
 xlim([-1.1 1])

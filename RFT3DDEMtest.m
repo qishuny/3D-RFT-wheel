@@ -200,11 +200,12 @@ depth = -radius + sinkage;
 
 
 % old method
-[idx, depthList, pile, under] = run_extractHmapFitTest(pointList, slipAngle, depth);
+
 
 % new fit method
 % [idx, depthList] = run_extractHmapFit(pointList, slipAngle * 180 / pi, abs(sinkage / 1000));
 % [idx, depthList] = run_extractHmapFitSmooth(pointList, slipAngle * 180 / pi, abs(sinkage / 1000));
+[idx, depthList, pile, under] = run_extractHmapFitTest(pointList, slipAngle, depth);
 % idx = pointList(3,:) < depth;
 % depthList = abs(depth - pointList(3,idx));
 forcePoints = pointList(:, idx);
@@ -244,13 +245,13 @@ coeff2 = 1.364833809455482;
 [sfList] = calc_sf(depthList, coeff1, coeff2);
 
 [ax23, az23] = calc_rft_alpha(forceBeta, forceGamma, sf);
-magF1 = -ay1 .* depthList(idx) .* (areaList(idx) .* 10 ^ -3) ;
-magF2 = -ax23 .* depthList(idx) .* (areaList(idx) .* 10 ^ -3);
+magF1 = -ay1 .* depthList .* (areaList(idx) .* 10 ^ -3).* sfList;
+magF2 = -ax23 .* depthList .* (areaList(idx) .* 10 ^ -3).* sfList;
 % F1 force in N
 F1tilde = magF1 .* e1List(:,idx);
 % F2 force in N
 F2tilde = magF2 .* e2List(:,idx);
-F2tilde(3,:) = az23 .* depthList(idx) .* (areaList(idx) .* 10^-3);
+F2tilde(3,:) = az23 .* depthList .* (areaList(idx) .* 10^-3).* sfList;
 
 % scaling factor for angles
 phiList = phi(idx);

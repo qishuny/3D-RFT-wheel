@@ -29,8 +29,8 @@ load('output/all_smooth_data_2.mat')
 
 % load wheel point data
 
-wheeldata = matfile('data/smooth_wheel_125.mat');
-% wheeldata = matfile('data/grousered_wheel_125.mat');
+% wheeldata = matfile('data/smooth_wheel_125.mat');
+wheeldata = matfile('data/grousered_wheel_125.mat');
 % wheeldata = matfile('data/plate.mat');
 
 pointList = wheeldata.Points;
@@ -43,11 +43,11 @@ plotVelocity = 0;
 plotGeometry = 0;
 
 % 1 for run Catherine's data 
-runData_toggle = 1;
+runData_toggle = 0;
 
 %% SET parameters
 % SET slip angle
-slipAngle = 0;
+slipAngle = 45;
 % SET velocity of the center of rotation of the body mm/s
 vcenter = 10;
 % SET wheel rotational speed mm/s
@@ -89,11 +89,38 @@ end
 %% plot force
 if plotForce == 1
     figure
-    quiver3(pointList(1, idx),pointList(2, idx),pointList(3, idx),netForce(1,:),netForce(2,:),netForce(3,:),2,'Color', [0,0.2,0.8]);
 
-    hold on 
+    plot3(pointList(1,:),pointList(2,:),pointList(3,:),'.','Color',[0.9,0.9,0.9],'MarkerSize',1)
 
-    legend('force');
+    hold on
+    pointList1 = pointList(:,idx);
+    X = pointList1(1,:);
+    Y = pointList1(2,:);
+    Z = pointList1(3,:);
+    U = netForce(1,:);
+    V = netForce(2,:);
+    W = netForce(3,:);
+    
+    q = quiver3(X, Y, Z, U, V, W);
+    mags = sqrt(sum(cat(2, q.UData(:), q.VData(:), ...
+            reshape(q.WData, numel(q.UData), [])).^2, 2));
+    
+
+    currentColormap = colormap(gca);
+    [~, ~, ind] = histcounts(mags, size(currentColormap, 1));
+
+    cmap = uint8(ind2rgb(ind(:), currentColormap) * 255);
+    cmap(:,:,4) = 255;
+    cmap = permute(repmat(cmap, [1 3 1]), [2 1 3]);
+
+    set(q.Head, ...
+    'ColorBinding', 'interpolated', ...
+    'ColorData', reshape(cmap(1:3,:,:), [], 4).');   %'
+    set(q.Tail, ...
+    'ColorBinding', 'interpolated', ...
+    'ColorData', reshape(cmap(1:2,:,:), [], 4).');
+    
+    title('3D-RFT Forces on Grousered Wheel');
     daspect([1 1 1])
     view(-55,15)
     axis off
