@@ -143,7 +143,11 @@ R_xlist =[];
 R_ylist =[];
 R_zlist =[];
 
-for i = 1:7
+
+slip_angle = 5;
+slip_ratio = 9;
+
+for i = 1:slip_angle
     
 
     Xe = 0;
@@ -163,7 +167,7 @@ for i = 1:7
     ZeZm = 0;
     Ze2 = 0;
     Zm2 = 0;
-    for j = 1:9
+    for j = 1:slip_ratio
         
         exp_x = Fx_avg(i, j);
         exp_y = Fy_avg(i, j);
@@ -207,9 +211,9 @@ for i = 1:7
     
 end
 
-deltaX =deltaX / 63
-deltaY =deltaY / 63
-deltaZ =deltaZ / 63
+deltaX =deltaX / (slip_angle * slip_ratio)
+deltaY =deltaY / (slip_angle * slip_ratio)
+deltaZ =deltaZ / (slip_angle * slip_ratio)
 R_xlist
 R_ylist
 R_zlist
@@ -237,7 +241,7 @@ xlim([-1.1 1])
 hold on
 xlabel('Slip Ratio')
 ylabel('Force (N)')
-for i = 1:7
+for i = 1:slip_angle
     switch i
         case 1
             color = cmuColor('red-web');
@@ -337,9 +341,7 @@ leg(2) = plot(NaN, NaN, 'o', 'MarkerEdgeColor', cmuColor('gold'));
 leg(3) = plot(NaN, NaN, 'o', 'MarkerEdgeColor', cmuColor('teal'));
 leg(4) = plot(NaN, NaN, 'o', 'MarkerEdgeColor', cmuColor('sky-blue'));
 leg(5) = plot(NaN, NaN, 'o', 'MarkerEdgeColor', cmuColor('palladian-green'));
-leg(6) = plot(NaN, NaN, 'o', 'MarkerEdgeColor', cmuColor('blue-thread'));
-leg(7) = plot(NaN, NaN, 'o', 'MarkerEdgeColor', cmuColor('scots-rose')); 
-legg = legend(leg,'0', '15', '30', '45', '60', '75', '90');
+legg = legend(leg,'0', '15', '30', '45', '60');
 title(legg, 'Slip Angle');
 hold off
 

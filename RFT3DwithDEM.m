@@ -216,20 +216,16 @@ forceGamma = gammaList(idx);
 [ay1, ~] = calc_rft_alpha(0, 0, sf);
 
 ay1 = zeros(1,numofForce) + ay1;
- 
-% % scaling factor for depth
-coeff1 = 1.915315192989908e+03;
-coeff2 = 1.364833809455482;
-[sfList] = calc_sf(depthList, coeff1, coeff2);
+
 
 [ax23, az23] = calc_rft_alpha(forceBeta, forceGamma, sf);
-magF1 = -ay1 .* depthList .* (areaList(idx) .* 10 ^ -3) .* sfList;
-magF2 = -ax23 .* depthList .* (areaList(idx) .* 10 ^ -3) .* sfList;
+magF1 = -ay1 .* depthList .* (areaList(idx) .* 10 ^ -3);
+magF2 = -ax23 .* depthList .* (areaList(idx) .* 10 ^ -3);
 % F1 force in N
 F1tilde = magF1 .* e1List(:,idx);
 % F2 force in N
 F2tilde = magF2 .* e2List(:,idx);
-F2tilde(3,:) = az23 .* depthList .* (areaList(idx) .* 10^-3) .* sfList;
+F2tilde(3,:) = az23 .* depthList .* (areaList(idx) .* 10^-3);
 
 % % scaling factor for angles
 % phiList = phi(idx);

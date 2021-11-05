@@ -5,10 +5,18 @@ pointList = wheeldata.Points;
 % pointList(1,:) = pointList(1,:) - 30;
 % depth = 0.04; %m
 
-slipAngle = 45;
 depth = -20;
-[idxOut, depthList, pile, under] = run_extractHmapFitTest(pointList, slipAngle, depth);
-size(depthList)
+
+slipAngle = pi/4;
+% SET velocity of the center of rotation of the body mm/s
+vcenter = 10;
+% SET wheel rotational speed mm/s
+wr = 0.001;
+% SET sinkage mm
+sinkage = 54;
+[Fx, Fy, Fz] = RFT3DDEMfunc(slipAngle, wr, sinkage)
+% [idxOut, depthList, pile, under] = run_extractHmapFitTest(pointList, slipAngle, depth);
+% size(depthList)
 % [idx, depthList] = run_extractHmap(pointList, slipAngle, depth);
 % v1 = [0.011764507331288; 0.011764507331288; 0.676209435691110]
 % v2 = [-0.707106781186548; -0.707106781186548; 0]

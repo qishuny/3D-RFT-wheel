@@ -1,59 +1,25 @@
 % 3D RFT Modeling on Wheels
 % Qishun Yu Catherine Pavlov
 % 02/21/2021
+function [Fx, Fy, Fz] = RFT3DDEMfunc(slipAngle, wr, sinkage, sf1, sf2)
 
-% global variables for calc_alpha and calc normal_scale
-global M a1 a2 a3 a4 b1 b2 b3 b4
-A00 = 0.206;
-A10 = 0.169;
-B11 = 0.212;
-B01 = 0.358;
-BM11 = 0.055;
-C11 = -0.124;
-C01 = 0.253;
-CM11 = 0.007;
-D10 = 0.088;
-M = [A00, A10, B11, B01, BM11, C11, C01, CM11, D10];
-
-a1 = 0.44;
-a2 = 3.62;
-a3 = 1.61;
-a4 = 0.41;
-b1 = 1.99;
-b2 = 1.61;
-b3 = 0.97;
-b4 = 4.31;
-
-% load experiment data
-load('output/all_smooth_data_2.mat')
+% sf1 for pileup sand
+% sf2 for normal sand
 
 % load wheel point data
 
 wheeldata = matfile('data/smooth_wheel_125.mat');
-% wheeldata = matfile('data/grousered_wheel_125.mat');
-% wheeldata = matfile('data/plate.mat');
 
 pointList = wheeldata.Points;
 areaList = wheeldata.Area;
 normalList = wheeldata.Normals;
 
-% 1 for plot 0 for not plot
-plotForce = 0;
-plotVelocity = 0;
-plotGeometry = 0;
-
-% 1 for run all data 
-runData_toggle = 0;
-
-%% SET parameters
-% SET slip angle
-slipAngle = pi/2;
-% SET velocity of the center of rotation of the body mm/s
+if wr == 0
+    wr = 0.00001;
+end
 vcenter = 10;
-% SET wheel rotational speed mm/s
-wr = 0.001;
-% SET sinkage mm
-sinkage = 54;
+
+
 % SET radius
 radius = 62.5;
 
@@ -67,132 +33,16 @@ sf = 1;
 [e1List, e2List, vList, vHoriList, v1List, v23List, phi] = calc_velocity(normalList, pointList, wr, vcenter, radius, slipAngle);
 % Force Calc
 [betaList, gammaList] = calc_BetaGamma(normalList, e2List, v23List);
-[Force, netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf, slipAngle);
+[Force, netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf, slipAngle, sf1, sf2);
 
 
 % transfer to experiment result frame
-Ftractive = Force(2)
-Fsidewall = -Force(1)
-Fload = Force(3)
-
-%% run all slip conditions
-
-if runData_toggle == 1
-    
-    h = waitbar(0,'Initializing waitbar...');
-    tic
-    runData(all_results, pointList, normalList, areaList, vcenter, radius, sf, h);
-    toc
-end
+Fx = Force(2);
+Fy = -Force(1);
+Fz = Force(3);
 
 
-%% plot force
-if plotForce == 1
-    figure
-    quiver3(pointList(1, idx),pointList(2, idx),pointList(3, idx),netForce(1,:),netForce(2,:),netForce(3,:),2,'Color', [0,0.2,0.8]);
-
-    hold on 
-
-    legend('force');
-    daspect([1 1 1])
-    view(-55,15)
-    axis off
-end
-
-%% plot velocity
-gapSize = 20;
-if plotVelocity == 1  
-    %Plot selected velocity and v1,v23
-    figure
-    for k =1:gapSize:size(pointList,2)
-
-        quiver3(pointList(1,k),pointList(2,k),pointList(3,k),vList(1,k),vList(2,k),vList(3,k),1,'Color', [0,0.2,0.8]);
-        hold on
-        quiver3(pointList(1,k),pointList(2,k),pointList(3,k),v1List(1,k),v1List(2,k),v1List(3,k),1,'r');
-        quiver3(pointList(1,k),pointList(2,k),pointList(3,k),v23List(1,k),v23List(2,k),v23List(3,k),1,'g');
-        legend('velocity','v1','v23')
-        daspect([1 1 1])
-    end
-
-    % Plot v23 and e2
-    figure
-    for k =1:gapSize:size(pointList,2)
-        quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e2List(1,k),e2List(2,k),e2List(3,k),'g');
-        hold on
-        quiver3(pointList(1,k),pointList(2,k),pointList(3,k),v23List(1,k),v23List(2,k),v23List(3,k),'r');
-        legend('e2','v23')
-    %     text(pointList(1,k),pointList(2,k),pointList(3,k),string(gammaList(k)*180/pi))
-        daspect([1 1 1])
-    end
-
-    %Plot v1 and e1
-    figure
-    for k =1:gapSize:size(pointList,2)
-        quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e1List(1,k),e1List(2,k),e1List(3,k),'g');
-        hold on
-        quiver3(pointList(1,k),pointList(2,k),pointList(3,k),v1List(1,k),v1List(2,k),v1List(3,k),'r');
-        legend('e1','v1')
-        daspect([1 1 1])
-    end
-end
-
-%% Plot geometry
-if plotGeometry == 1  
-    %Plot selected normal vector and e1,e2
-    figure
-    plot3(pointList(1,:),pointList(2,:),pointList(3,:),'ok','MarkerFaceColor',[0,0.5,0.5])
-    hold on
-    quiver3(pointList(1,:),pointList(2,:),pointList(3,:),normalList(1,:),normalList(2,:),normalList(3,:),10,'Color', [0,0.2,0.8]);
-    quiver3(pointList(1,:),pointList(2,:),pointList(3,:),e1List(1,:),e1List(2,:),e1List(3,:),10,'r');
-    quiver3(pointList(1,:),pointList(2,:),pointList(3,:),e2List(1,:),e2List(2,:),e2List(3,:),10,'g');
-    legend('point','normal vector','e1 axis','e2 axis')
-    daspect([1 1 1])
-end
-
-function runData(all_results, pointList, normalList, areaList, vcenter, radius, sf, h)
-for i=1:length(all_results)
-    result = all_results(i);
-    wr = result.Vry;
-    if wr == 0
-        wr = 0.00001;
-    end  
-    sinkage = abs(result.avg_Z);
-%     sinkage = 20;
-    slipAngle = result.beta * pi / 180;
-    
-
-    % Geometry & Velocity Calc
-    [e1List, e2List, ~, ~, ~, v23List, phi] = ...
-        calc_velocity(normalList, pointList, wr, vcenter, radius, slipAngle);
-
-    % Force Calc
-    [betaList, gammaList] = calc_BetaGamma(normalList, e2List, v23List);
-    [Force, ~, ~] = ...
-        calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf, slipAngle);
-
-    Fsidewall = -Force(1);
-    Ftractive = Force(2);
-    Fload = Force(3);
-    RFToutput(i) = struct('ForceX', Ftractive, ...
-        'ForceY', Fsidewall , ...
-        'ForceZ', Fload, ...
-        'wr', result.Vry, ...
-        'depth', result.avg_Z, ...
-        'beta', result.beta, ...
-        'slip', result.slip); 
-    
-    waitbar(i/length(all_results), h, 'In progress...',sprintf('%12.9f',i))
-end
-waitbar(1,h,'Completed.');
-disp("Done.");
-
-close(h);
-save('output/RFTDEMnewMethodoutput.mat','RFToutput');
-
-
-end
-
-function [Force, netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf, slipAngle);
+function [Force, netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf, slipAngle, sf1, sf2);
 % depth = sand with respect to the center of the wheel mm
 depth = -radius + sinkage;
 
@@ -205,7 +55,7 @@ depth = -radius + sinkage;
 % new fit method
 % [idx, depthList] = run_extractHmapFit(pointList, slipAngle * 180 / pi, abs(sinkage / 1000));
 % [idx, depthList] = run_extractHmapFitSmooth(pointList, slipAngle * 180 / pi, abs(sinkage / 1000));
-[idx, depthList, pile, under] = run_extractHmapFitTest(pointList, slipAngle, depth);
+[idx, depthList, pile, under] = DEMdepthList(pointList, slipAngle, depth, sf1, sf2);
 % idx = pointList(3,:) < depth;
 % depthList = abs(depth - pointList(3,idx));
 forcePoints = pointList(:, idx);
@@ -344,7 +194,15 @@ end
 % Compute f1, f23 from v1 v23 v
 % the sigmoid functions are from [Treers et al., 2021]
 function [f1, f23] = normalScale(phi)
-global a1 a2 a3 a4 b1 b2 b3 b4
+a1 = 0.44;
+a2 = 3.62;
+a3 = 1.61;
+a4 = 0.41;
+b1 = 1.99;
+b2 = 1.61;
+b3 = 0.97;
+b4 = 4.31;
+
 idx1 = (phi > pi/2 & phi <= pi);
 idx2 = (phi < 0 & phi >= -pi/2);
 idx3 = (phi < -pi/2 & phi >= -pi);
@@ -383,11 +241,20 @@ end
 
 % find the local alphax and alphaz with give gamma and beta
 % return alpha in N/(cm^3)
-function [alphaX, alphaZ] = calc_rft_alpha(beta,gamma, sf)
+function [alphaX, alphaZ] = calc_rft_alpha(beta, gamma, sf)
 % using discrete Fourier transform fitting function [Li et al., 2013]
 % Fourier coefficients M
+A00 = 0.206;
+A10 = 0.169;
+B11 = 0.212;
+B01 = 0.358;
+BM11 = 0.055;
+C11 = -0.124;
+C01 = 0.253;
+CM11 = 0.007;
+D10 = 0.088;
+M = [A00, A10, B11, B01, BM11, C11, C01, CM11, D10];
 
-global M
 beta = wrapToPi(beta);
 gamma = wrapToPi(gamma);
 
@@ -501,3 +368,4 @@ end
 % v1List = dot(vList,e1List)./1.*e1List;
 % v23List = vList-v1List;
 % end
+end
