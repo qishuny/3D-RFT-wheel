@@ -89,8 +89,8 @@ idxWheelY = Yqr(:, :) <= wheelDiameter/ 2  + 2& Yqr(:, :) >= - wheelDiameter/ 2 
 idx = idxWheelX & idxWheelY;
 SandHmapnew = SandHmapOriginal;
 
-SandHmapnew(idx) = max(SandHmapnew(idx), -depth);
-% SandHmapnew(idx) = -100;
+% SandHmapnew(idx) = max(SandHmapnew(idx), -depth);
+SandHmapnew(idx) = -100;
 % SandHmapnew(idx) = -depth;
 
 

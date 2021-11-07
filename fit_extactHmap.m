@@ -5,7 +5,7 @@ pointList = wheeldata.Points;
 pointList(1,:) = pointList(1,:) - 0.5*(max(pointList(1,:))-min(pointList(1,:)));
 pointListOriginal = pointList;
 % slipAngle in degree
-slipAngle = 90;
+slipAngle = 45;
 
 wheelDiameter = 0.125; %m
 wheelWidth = 0.06; %m
