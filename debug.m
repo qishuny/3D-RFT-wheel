@@ -1,20 +1,29 @@
 wheeldata = matfile('data/smooth_wheel_125.mat');
-
+% wheeldata = matfile('data/grousered_wheel_125.mat');
 pointList = wheeldata.Points;
 
 % pointList(1,:) = pointList(1,:) - 30;
 % depth = 0.04; %m
 
-depth = -20;
 
-slipAngle = pi/4;
+slipAngle = 0;
 % SET velocity of the center of rotation of the body mm/s
 vcenter = 10;
 % SET wheel rotational speed mm/s
-wr = 0.001;
+wr = 10;
 % SET sinkage mm
-sinkage = 54;
-[Fx, Fy, Fz] = RFT3DDEMfunc(slipAngle, wr, sinkage)
+
+
+sf1 = 0.175;
+sf2 = 0.5;
+flist = zeros(1000, 3);
+% sinkage = 35.68;
+% [Fx, Fy, Fz] = RFT3Dfunc(wheeldata, slipAngle, wr, vcenter, sinkage, sf1, sf2);
+for i = 1:1000
+    sinkage = 10 + i/100*4;
+    [flist(i,1), flist(i,2), flist(i,3)] = RFT3Dfunc(wheeldata, slipAngle, wr, vcenter, sinkage, sf1, sf2);
+end
+
 % [idxOut, depthList, pile, under] = run_extractHmapFitTest(pointList, slipAngle, depth);
 % size(depthList)
 % [idx, depthList] = run_extractHmap(pointList, slipAngle, depth);

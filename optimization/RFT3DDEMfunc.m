@@ -1,15 +1,12 @@
 % 3D RFT Modeling on Wheels
 % Qishun Yu Catherine Pavlov
 % 02/21/2021
-function [Fx, Fy, Fz] = RFT3DDEMfunc(slipAngle, wr, sinkage, sf1, sf2)
+function [Fx, Fy, Fz] = RFT3DDEMfunc(wheeldata, slipAngle, wr, sinkage, sf1, sf2)
 
 % sf1 for pileup sand
 % sf2 for normal sand
 
 % load wheel point data
-
-wheeldata = matfile('data/smooth_wheel_125.mat');
-
 pointList = wheeldata.Points;
 areaList = wheeldata.Area;
 normalList = wheeldata.Normals;
@@ -22,7 +19,6 @@ vcenter = 10;
 
 % SET radius
 radius = 62.5;
-
 % SET scaling factor
 sf = 1;
 
@@ -68,40 +64,31 @@ forceGamma = gammaList(idx);
 
 ay1 = zeros(1,numofForce) + ay1;
  
-% % scaling factor for depth
+% scaling using sf1 and sf2 for depth
+[ax23, az23] = calc_rft_alpha(forceBeta, forceGamma, sf);
+magF1 = -ay1 .* depthList .* (areaList(idx) .* 10 ^ -3);
+magF2 = -ax23 .* depthList .* (areaList(idx) .* 10 ^ -3);
+% F1 force in N
+F1tilde = magF1 .* e1List(:,idx);
+% F2 force in N
+F2tilde = magF2 .* e2List(:,idx);
+F2tilde(3,:) = az23 .* depthList .* (areaList(idx) .* 10^-3);
+
+
+% % scaling using dynamic sf for depth
 % coeff1 = 1.915315192989908e+03;
 % coeff2 = 1.364833809455482;
 % [sfList] = calc_sf(depthList, coeff1, coeff2);
 % 
 % [ax23, az23] = calc_rft_alpha(forceBeta, forceGamma, sf);
-% magF1 = -ay1 .* depthList .* (areaList(idx) .* 10 ^ -3) .* sfList;
-% magF2 = -ax23 .* depthList .* (areaList(idx) .* 10 ^ -3) .* sfList;
+% magF1 = -ay1 .* depthList .* (areaList(idx) .* 10 ^ -3).* sfList;
+% magF2 = -ax23 .* depthList .* (areaList(idx) .* 10 ^ -3).* sfList;
 % % F1 force in N
 % F1tilde = magF1 .* e1List(:,idx);
 % % F2 force in N
 % F2tilde = magF2 .* e2List(:,idx);
-% F2tilde(3,:) = az23 .* depthList .* (areaList(idx) .* 10^-3) .* sfList;
-% 
-% % scaling factor for angles
-% phiList = phi(idx);
-% [f1List,f2List] = normalScale(phiList);
-% 
-% netForce = f1List .* F1tilde + f2List .* F2tilde;
-% Force = sum(netForce, 2);
+% F2tilde(3,:) = az23 .* depthList .* (areaList(idx) .* 10^-3).* sfList;
 
-% scaling factor for depth
-coeff1 = 1.915315192989908e+03;
-coeff2 = 1.364833809455482;
-[sfList] = calc_sf(depthList, coeff1, coeff2);
-
-[ax23, az23] = calc_rft_alpha(forceBeta, forceGamma, sf);
-magF1 = -ay1 .* depthList .* (areaList(idx) .* 10 ^ -3).* sfList;
-magF2 = -ax23 .* depthList .* (areaList(idx) .* 10 ^ -3).* sfList;
-% F1 force in N
-F1tilde = magF1 .* e1List(:,idx);
-% F2 force in N
-F2tilde = magF2 .* e2List(:,idx);
-F2tilde(3,:) = az23 .* depthList .* (areaList(idx) .* 10^-3).* sfList;
 
 % scaling factor for angles
 phiList = phi(idx);

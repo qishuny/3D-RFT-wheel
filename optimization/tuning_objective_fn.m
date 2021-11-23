@@ -1,4 +1,4 @@
-function error = tuning_objective_fn(x, all_results)
+function error = tuning_objective_fn(wheeldata, x, all_results)
 %all_results is the data to be tuned over, if you want to tune a and b for
 %a subset of data you must crop it down before passing it to this function
 
@@ -30,11 +30,11 @@ for i=1:n
 %     Fx = 0;
 %     Fy = 0;
 %     Fz = 0;
-    [Fx, Fy, Fz] = RFT3DDEMfunc(slipAngle, wr, sinkage, sf1, sf2);
+    [Fx, Fy, Fz] = RFT3DDEMfunc(wheeldata, slipAngle, wr, sinkage, sf1, sf2);
     
 
-    err = (Fx - avg_Fx)^2/(avg_Fx^2) + (Fy - avg_Fy)^2/(avg_Fy^2) + (Fz - avg_Fz)^2/(avg_Fz^2);
-%     err = (Fx - avg_Fx)^2 + (Fy - avg_Fy)^2 + (Fz - avg_Fz)^2;
+%     err = (Fx - avg_Fx)^2/(avg_Fx^2) + (Fy - avg_Fy)^2/(avg_Fy^2) + (Fz - avg_Fz)^2/(avg_Fz^2);
+    err = (Fx - avg_Fx)^2 + (Fy - avg_Fy)^2 ;
     error = error + err;
 end
 error = double(error)    

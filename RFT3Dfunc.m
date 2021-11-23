@@ -1,228 +1,41 @@
 % 3D RFT Modeling on Wheels
 % Qishun Yu Catherine Pavlov
 % 02/21/2021
+function [Fx, Fy, Fz] = RFT3Dfunc(wheeldata, slipAngle, wr, vcenter, sinkage, sf1, sf2)
 
-% global variables for calc_alpha and calc normal_scale
-global M a1 a2 a3 a4 b1 b2 b3 b4
-A00 = 0.206;
-A10 = 0.169;
-B11 = 0.212;
-B01 = 0.358;
-BM11 = 0.055;
-C11 = -0.124;
-C01 = 0.253;
-CM11 = 0.007;
-D10 = 0.088;
-M = [A00, A10, B11, B01, BM11, C11, C01, CM11, D10];
-
-a1 = 0.44;
-a2 = 3.62;
-a3 = 1.61;
-a4 = 0.41;
-b1 = 1.99;
-b2 = 1.61;
-b3 = 0.97;
-b4 = 4.31;
-
-% load experiment data
-load('output/all_smooth_data_2.mat')
+% sf1 for pileup sand
+% sf2 for normal sand
 
 % load wheel point data
-
-% wheeldata = matfile('data/smooth_wheel_125.mat');
-wheeldata = matfile('data/grousered_wheel_125.mat');
-% wheeldata = matfile('data/plate.mat');
-
 pointList = wheeldata.Points;
 areaList = wheeldata.Area;
 normalList = wheeldata.Normals;
 
-% 1 for plot 0 for not plot
-plotForce = 0;
-plotVelocity = 0;
-plotGeometry = 0;
+if wr == 0
+    wr = 0.00001;
+end
 
-% 1 for run Catherine's data 
-runData_toggle = 0;
 
-%% SET parameters
-% SET slip angle
-slipAngle = 0;
-% SET velocity of the center of rotation of the body mm/s
-vcenter = 10;
-% SET wheel rotational speed mm/s
-wr = 0.00001;
-% SET sinkage mm
-sinkage = 25;
 % SET radius
 radius = 62.5;
-
 % SET scaling factor
-sf = 0.6985;
+sf = 1;
 
 %% Single RFT calc
 
 % Geometry & Velocity Calc
-tic
+
 [e1List, e2List, vList, vHoriList, v1List, v23List, phi] = calc_velocity(normalList, pointList, wr, vcenter, radius, slipAngle);
 % Force Calc
 [betaList, gammaList] = calc_BetaGamma(normalList, e2List, v23List);
 [Force, netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
-toc
+
 
 % transfer to experiment result frame
-Ftractive = Force(2);
-Fsidewall = -Force(1);
-Fload = Force(3)
+Fx = Force(2);
+Fy = -Force(1);
+Fz = Force(3);
 
-%% run all slip conditions
-
-if runData_toggle == 1
-    
-    h = waitbar(0,'Initializing waitbar...');
-    tic
-    runData(all_results, pointList, normalList, areaList, vcenter, radius, sf, h);
-    toc
-end
-
-
-%% plot force
-if plotForce == 1
-    figure
-
-    plot3(pointList(1,:),pointList(2,:),pointList(3,:),'.','Color',[0.9,0.9,0.9],'MarkerSize',1)
-
-    hold on
-    pointList1 = pointList(:,idx);
-    X = pointList1(1,:);
-    Y = pointList1(2,:);
-    Z = pointList1(3,:);
-    U = netForce(1,:);
-    V = netForce(2,:);
-    W = netForce(3,:);
-    
-    q = quiver3(X, Y, Z, U, V, W);
-    mags = sqrt(sum(cat(2, q.UData(:), q.VData(:), ...
-            reshape(q.WData, numel(q.UData), [])).^2, 2));
-    
-
-    currentColormap = colormap(gca);
-    [~, ~, ind] = histcounts(mags, size(currentColormap, 1));
-
-    cmap = uint8(ind2rgb(ind(:), currentColormap) * 255);
-    cmap(:,:,4) = 255;
-    cmap = permute(repmat(cmap, [1 3 1]), [2 1 3]);
-
-    set(q.Head, ...
-    'ColorBinding', 'interpolated', ...
-    'ColorData', reshape(cmap(1:3,:,:), [], 4).');   %'
-    set(q.Tail, ...
-    'ColorBinding', 'interpolated', ...
-    'ColorData', reshape(cmap(1:2,:,:), [], 4).');
-    
-    title('3D-RFT Forces on Grousered Wheel');
-    daspect([1 1 1])
-    view(-55,15)
-    axis off
-end
-
-%% plot velocity
-gapSize = 20;
-if plotVelocity == 1  
-    %Plot selected velocity and v1,v23
-    figure
-    
-
-    quiver3(pointList(1,idx),pointList(2,idx),pointList(3,idx),vList(1,idx),vList(2,idx),vList(3,idx),1,'Color', [0,0.2,0.8]);
-    hold on
-    quiver3(pointList(1,idx),pointList(2,idx),pointList(3,idx),v1List(1,idx),v1List(2,idx),v1List(3,idx),1,'r');
-    quiver3(pointList(1,idx),pointList(2,idx),pointList(3,idx),v23List(1,idx),v23List(2,idx),v23List(3,idx),1,'g');
-    legend('velocity','v1','v23')
-    daspect([1 1 1])
-    
-
-    % Plot v23 and e2
-%     figure
-%     for k =1:gapSize:size(pointList,2)
-%         quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e2List(1,k),e2List(2,k),e2List(3,k),'g');
-%         hold on
-%         quiver3(pointList(1,k),pointList(2,k),pointList(3,k),v23List(1,k),v23List(2,k),v23List(3,k),'r');
-%         legend('e2','v23')
-%     %     text(pointList(1,k),pointList(2,k),pointList(3,k),string(gammaList(k)*180/pi))
-%         daspect([1 1 1])
-%     end
-
-    %Plot v1 and e1
-%     figure
-%     
-%     idxS = pointList(3,:) < -62.49;
-%     plot3(pointList(1,idxS),pointList(2,idxS),pointList(3,idxS),'ok','MarkerFaceColor',[0,0.5,0.5])
-%     for k =1:gapSize:size(pointList,2)
-%         quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e1List(1,k),e1List(2,k),e1List(3,k),'g');
-%         hold on
-%         quiver3(pointList(1,k),pointList(2,k),pointList(3,k),v1List(1,k),v1List(2,k),v1List(3,k),'r');
-%         legend('e1','v1')
-%         daspect([1 1 1])
-%     end
-end
-
-%% Plot geometry
-if plotGeometry == 1  
-    %Plot selected normal vector and e1,e2
-    figure
-%     plot3(pointList(1,idx),pointList(2,idx),pointList(3,idx),'ok','MarkerFaceColor',[0,0.5,0.5])
-    
-    quiver3(pointList(1,idx),pointList(2,idx),pointList(3,idx),normalList(1,idx),normalList(2,idx),normalList(3,idx),1,'Color', [0,0.2,0.8]);
-    hold on
-    quiver3(pointList(1,idx),pointList(2,idx),pointList(3,idx),e1List(1,idx),e1List(2,idx),e1List(3,idx),1,'r');
-    quiver3(pointList(1,idx),pointList(2,idx),pointList(3,idx),e2List(1,idx),e2List(2,idx),e2List(3,idx),1,'g');
-    legend('normal vector','e1 axis','e2 axis')
-    daspect([1 1 1])
-end
-
-%% Functions
-function runData(all_results, pointList, normalList, areaList, vcenter, radius, sf, h)
-for i=1:length(all_results)
-    result = all_results(i);
-    wr = result.Vry;
-    if wr == 0
-        wr = 0.00001;
-    end  
-    sinkage = abs(result.avg_Z);
-%     sinkage = 25;
-    slipAngle = result.beta * pi / 180;
-    
-
-    % Geometry & Velocity Calc
-    [e1List, e2List, ~, ~, ~, v23List, phi] = ...
-        calc_velocity(normalList, pointList, wr, vcenter, radius, slipAngle);
-
-    % Force Calc
-    [betaList, gammaList] = calc_BetaGamma(normalList, e2List, v23List);
-    [Force, ~, ~] = ...
-        calc_3D_rft_sf(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
-
-    Fsidewall = -Force(1);
-    Ftractive = Force(2);
-    Fload = Force(3);
-    RFToutput(i) = struct('ForceX', Ftractive, ...
-        'ForceY', Fsidewall , ...
-        'ForceZ', Fload, ...
-        'wr', result.Vry, ...
-        'depth', result.avg_Z, ...
-        'beta', result.beta, ...
-        'slip', result.slip); 
-    
-    waitbar(i/length(all_results), h, 'In progress...')
-end
-waitbar(1,h,'Completed.');
-disp("Done.");
-
-close(h);
-save('output/RFTsfoutput.mat','RFToutput');
-
-
-end
 
 function [Force,netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
 % depth = sand with respect to the center of the wheel mm
@@ -245,7 +58,7 @@ ay1 = zeros(1,numofForce) + ay1;
 coeff1 = 1.915315192989908e+03;
 coeff2 = 1.364833809455482;
 [sfList] = calc_sf(abs(depth - pointList(3,idx)), coeff1, coeff2);
-mean(sfList)
+
 [ax23, az23] = calc_rft_alpha(forceBeta, forceGamma, sf);
 magF1 = -ay1 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3) .* sfList;
 magF2 = -ax23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3) .* sfList;
@@ -268,46 +81,6 @@ netForce = f1List .* F1tilde + f2List .* F2tilde;
 Force = sum(netForce, 2);
 end
 
-function [Force,netForce, idx] = calc_3D_rft_sf(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
-% depth = sand with respect to the center of the wheel mm
-depth = -radius + sinkage;
-
-% find points below the surface of the soil
-idx = pointList(3,:) < depth;
-forcePoints = pointList(:, idx);
-numofForce = size(forcePoints, 2);
-
-forceBeta = betaList(idx);
-forceGamma = gammaList(idx);
-
-[ay1, ~] = calc_rft_alpha(0, 0, sf);
-
-ay1 = zeros(1,numofForce) + ay1;
- 
-
-% scaling factor for depth
-
-[ax23, az23] = calc_rft_alpha(forceBeta, forceGamma, sf);
-magF1 = -ay1 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3) .* sf;
-magF2 = -ax23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3) .* sf;
-
-% F1 force in N
-F1tilde = magF1 .* e1List(:,idx);
-% F2 force in N
-F2tilde = magF2 .* e2List(:,idx);
-F2tilde(3,:) = az23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10^-3) .* sf;
-
-% % scale by 0.8
-% F1tilde = 0.8 .* F1tilde;
-% F2tilde = 0.8 .* F2tilde;
- 
-% scaling factor for angles
-phiList = phi(idx);
-[f1List,f2List] = normalScale(phiList);
-
-netForce = f1List .* F1tilde + f2List .* F2tilde;
-Force = sum(netForce, 2);
-end
 
 
 function [e1List, e2List, vList, vHoriList, v1List, v23List, phi] = calc_velocity(normalList, pointList, wr, vcenter, radius, slipAngle)
@@ -324,6 +97,7 @@ numofNormal = size(normalList, 2);
 e2List = [normalList(1, :);
     normalList(2, :);
     zeros(1, numofNormal)];
+
 magne2 = sqrt(e2List(1, :) .^2 + e2List(2, :) .^2 + e2List(3, :) .^2);
 e2List = [e2List(1, :) ./ magne2;
     e2List(2, :) ./ magne2;
@@ -390,7 +164,15 @@ end
 % Compute f1, f23 from v1 v23 v
 % the sigmoid functions are from [Treers et al., 2021]
 function [f1, f23] = normalScale(phi)
-global a1 a2 a3 a4 b1 b2 b3 b4
+a1 = 0.44;
+a2 = 3.62;
+a3 = 1.61;
+a4 = 0.41;
+b1 = 1.99;
+b2 = 1.61;
+b3 = 0.97;
+b4 = 4.31;
+
 idx1 = (phi > pi/2 & phi <= pi);
 idx2 = (phi < 0 & phi >= -pi/2);
 idx3 = (phi < -pi/2 & phi >= -pi);
@@ -424,17 +206,25 @@ timeprd = sqrt(v1(1, :) .^2 + v1(2, :) .^ 2 ...
 
 % not stable, may output imaginary value when angle is around pi. 
 angles = acos(dotprd ./ timeprd);
-angles = real(angles);
 end
 
 
 % find the local alphax and alphaz with give gamma and beta
 % return alpha in N/(cm^3)
-function [alphaX, alphaZ] = calc_rft_alpha(beta,gamma, sf)
+function [alphaX, alphaZ] = calc_rft_alpha(beta, gamma, sf)
 % using discrete Fourier transform fitting function [Li et al., 2013]
 % Fourier coefficients M
+A00 = 0.206;
+A10 = 0.169;
+B11 = 0.212;
+B01 = 0.358;
+BM11 = 0.055;
+C11 = -0.124;
+C01 = 0.253;
+CM11 = 0.007;
+D10 = 0.088;
+M = [A00, A10, B11, B01, BM11, C11, C01, CM11, D10];
 
-global M
 beta = wrapToPi(beta);
 gamma = wrapToPi(gamma);
 
@@ -548,3 +338,4 @@ end
 % v1List = dot(vList,e1List)./1.*e1List;
 % v23List = vList-v1List;
 % end
+end

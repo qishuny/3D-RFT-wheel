@@ -203,7 +203,7 @@ waitbar(1,h,'Completed.');
 disp("Done.");
 
 close(h);
-save('output/RFToutput.mat','RFToutput');
+save('output/RFTbalanceoutput.mat','RFToutput');
 
 
 end

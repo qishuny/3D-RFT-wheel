@@ -53,5 +53,26 @@ for i = 1:length(all_results)
 end
 %%
 
+depth20 = zeros(1,9);
 
+for i = 1:9
+    for j = 1:1000
+        Fz = 0;
+        Fx = 0;
+        Fy = 0;
+        Dp = 0;
+        if abs(abs(Depth(i, 1, j).ForceZ) - 20) < 0.1;
+%             abs(Depth(i, 1, j).ForceZ);
+          
+            Depth(i,1,j).ForceX
+            depth20(1,i) = Depth(i,1,j).depth;
+            
+        end
+        
+    end
+    
+end
+figure()
+scatter(slipList, depth20)
+ylim([25 25.5])
 save('output/RFTbalanceoutput.mat','RFToutput');

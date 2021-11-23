@@ -2,10 +2,13 @@ load('output/all_smooth_data_2.mat')
 % load('output/RFToutput.mat')
 % load('output/RFTDEMsameDepthoutput.mat')
 % load('output/RFTDEMoutput.mat')
-load('output/RFTDEMPoly55output.mat')
-% load('output/RFTbalanceoutput.mat')
+% load('output/RFTDEMPoly55output.mat')
+load('output/RFTbalanceoutput.mat')
 % load('output/RFTsfoutput.mat')
-load('output/RFTDEMnewMethodoutput.mat')
+
+% load('output/RFTDEMoptoutput.mat')
+
+
 x = [-1 -0.7 -0.5 -0.2 0 0.23 0.5 0.75 0.9];
 
 Fx = cell(9,7);
@@ -15,6 +18,9 @@ Fz = cell(9,7);
 FxRFT = cell(9,7);
 FyRFT = cell(9,7);
 FzRFT = cell(9,7);
+
+depth = cell(9,7);
+depthRFT = cell(9,7);
 
 for i=1:length(all_results)
     exp_result = all_results(i);
@@ -33,6 +39,8 @@ for i=1:length(all_results)
             FyRFT{column, 1} = [FyRFT{column, 1} rft_result.ForceY];
             FzRFT{column, 1} = [FzRFT{column, 1} rft_result.ForceZ];
             
+            depth{column, 1} = [depth{column, 1} -exp_result.avg_Z];
+            depthRFT{column, 1} = [depthRFT{column, 1} -rft_result.depth];
         case 15
             
             Fx{column, 2} = [Fx{column, 2} -exp_result.avg_Fy];
@@ -42,6 +50,10 @@ for i=1:length(all_results)
             FxRFT{column, 2} = [FxRFT{column, 2} rft_result.ForceX];
             FyRFT{column, 2} = [FyRFT{column, 2} rft_result.ForceY];
             FzRFT{column, 2} = [FzRFT{column, 2} rft_result.ForceZ];
+            
+            depth{column, 2} = [depth{column, 2} -exp_result.avg_Z];
+            depthRFT{column, 2} = [depthRFT{column, 2} -rft_result.depth];
+            
         case 30
             
             Fx{column, 3} = [Fx{column, 3} -exp_result.avg_Fy];
@@ -51,6 +63,10 @@ for i=1:length(all_results)
             FxRFT{column, 3} = [FxRFT{column, 3} rft_result.ForceX];
             FyRFT{column, 3} = [FyRFT{column, 3} rft_result.ForceY];
             FzRFT{column, 3} = [FzRFT{column, 3} rft_result.ForceZ];
+            
+            depth{column, 3} = [depth{column, 3} -exp_result.avg_Z];
+            depthRFT{column, 3} = [depthRFT{column, 3} -rft_result.depth];
+            
         case 45
             
             Fx{column, 4} = [Fx{column, 4} -exp_result.avg_Fy];
@@ -61,6 +77,9 @@ for i=1:length(all_results)
             FyRFT{column, 4} = [FyRFT{column, 4} rft_result.ForceY];
             FzRFT{column, 4} = [FzRFT{column, 4} rft_result.ForceZ];
             
+            depth{column, 4} = [depth{column, 4} -exp_result.avg_Z];
+            depthRFT{column, 4} = [depthRFT{column, 4} -rft_result.depth];
+            
         case 60
             
             Fx{column, 5} = [Fx{column, 5} -exp_result.avg_Fy];
@@ -70,6 +89,10 @@ for i=1:length(all_results)
             FxRFT{column, 5} = [FxRFT{column, 5} rft_result.ForceX];
             FyRFT{column, 5} = [FyRFT{column, 5} rft_result.ForceY];
             FzRFT{column, 5} = [FzRFT{column, 5} rft_result.ForceZ];
+            
+            depth{column, 5} = [depth{column, 5} -exp_result.avg_Z];
+            depthRFT{column, 5} = [depthRFT{column, 5} -rft_result.depth];
+            
         case 75
             
             Fx{column, 6} = [Fx{column, 6} -exp_result.avg_Fy];
@@ -79,6 +102,10 @@ for i=1:length(all_results)
             FxRFT{column, 6} = [FxRFT{column, 6} rft_result.ForceX];
             FyRFT{column, 6} = [FyRFT{column, 6} rft_result.ForceY];
             FzRFT{column, 6} = [FzRFT{column, 6} rft_result.ForceZ];
+            
+            depth{column, 6} = [depth{column, 6} -exp_result.avg_Z];
+            depthRFT{column, 6} = [depthRFT{column, 6} -rft_result.depth];
+            
         case 90
             
             Fx{column, 7} = [Fx{column, 7} -exp_result.avg_Fy];
@@ -88,6 +115,9 @@ for i=1:length(all_results)
             FxRFT{column, 7} = [FxRFT{column, 7} rft_result.ForceX];
             FyRFT{column, 7} = [FyRFT{column, 7} rft_result.ForceY];
             FzRFT{column, 7} = [FzRFT{column, 7} rft_result.ForceZ];
+            
+            depth{column, 7} = [depth{column, 7} -exp_result.avg_Z];
+            depthRFT{column, 7} = [depthRFT{column, 7} -rft_result.depth];
         otherwise
             color = 'k';
     end
@@ -107,6 +137,9 @@ Fx_rft_avg = zeros(9, 7);
 Fy_rft_avg = zeros(9, 7);
 Fz_rft_avg = zeros(9, 7);
 
+depth_avg = zeros(9, 7);
+depth_rft_avg = zeros(9, 7);
+
 for i = 1:9
     for j = 1:7
         Fx_avg(i,j) = mean(Fx{i, j});
@@ -121,6 +154,8 @@ for i = 1:9
         Fy_rft_avg(i,j) = mean(FyRFT{i, j});
         Fz_rft_avg(i,j) = mean(FzRFT{i, j});
         
+        depth_avg(i,j) = mean(depth{i, j});
+        depth_rft_avg(i,j) = mean(depthRFT{i, j});
     end
 end
 
@@ -135,6 +170,9 @@ Fx_rft_avg = Fx_rft_avg';
 Fy_rft_avg = Fy_rft_avg';
 Fz_rft_avg = Fz_rft_avg';
 
+depth_avg = depth_avg';
+depth_rft_avg = depth_rft_avg';
+
 deltaX = 0;
 deltaY = 0;
 deltaZ = 0;
@@ -146,6 +184,8 @@ R_zlist =[];
 
 slip_angle = 5;
 slip_ratio = 9;
+
+err_slip = zeros(3, slip_angle);
 
 for i = 1:slip_angle
     
@@ -177,6 +217,10 @@ for i = 1:slip_angle
         rft_y = Fy_rft_avg(i,j);
         rft_z = Fz_rft_avg(i,j);
         
+        err_slip(1, i) = err_slip(1, i) + abs(exp_x - rft_x);
+        err_slip(2, i) = err_slip(2, i) + abs(exp_y - rft_y);
+        err_slip(3, i) = err_slip(3, i) + abs(exp_z - rft_z);
+        
         deltaX = deltaX + abs(exp_x - rft_x);
         deltaY = deltaY + abs(exp_y - rft_y);
         deltaZ = deltaZ + abs(exp_z - rft_z);
@@ -201,6 +245,9 @@ for i = 1:slip_angle
         Ym2 = Ym2 + rft_y * rft_y;
         Zm2 = Zm2 + rft_z * rft_z;
     end
+    err_slip(1, i) = err_slip(1, i)/slip_ratio;
+    err_slip(2, i) = err_slip(2, i)/slip_ratio;
+    err_slip(3, i) = err_slip(3, i)/slip_ratio;
     
     XR = (9 * XeXm - Xe * Xm)/(sqrt(9 * Xe2 - Xe * Xe) * sqrt(9 * Xm2 - Xm * Xm));
     YR = (9 * YeYm - Ye * Ym)/(sqrt(9 * Ye2 - Ye * Ye) * sqrt(9 * Ym2 - Ym * Ym));
@@ -217,6 +264,35 @@ deltaZ =deltaZ / (slip_angle * slip_ratio)
 R_xlist
 R_ylist
 R_zlist
+
+figure()
+title('depth')
+hold on
+for i = 1:slip_angle
+    switch i
+        case 1
+            color = cmuColor('red-web');
+        case 2
+            color = cmuColor('gold');
+        case 3
+            color = cmuColor('teal');
+        case 4
+            color = cmuColor('sky-blue');
+        case 5
+            color = cmuColor('palladian-green');
+        case 6
+            color = cmuColor('blue-thread');
+        case 7
+            color = cmuColor('scots-rose');
+        otherwise
+            color = 'k';
+    end
+    
+    
+    e = plot(x, depth_avg(i,:),'o', 'MarkerEdgeColor', color);
+    hold on
+    p = plot(x, depth_rft_avg(i,:), 'Color', color);
+end
 
 
 figure()

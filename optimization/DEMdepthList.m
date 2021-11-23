@@ -37,7 +37,7 @@ depthListUnder = depthList(under);
 pointListUnder = pointList(:,under);
 
 depthListOut = depthList(idxOut);
-plotToggle = 1;
+plotToggle = 0;
 
 
 if plotToggle == 1
