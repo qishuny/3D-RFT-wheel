@@ -43,7 +43,7 @@ plotVelocity = 0;
 plotGeometry = 0;
 
 % 1 for run all data 
-runData_toggle = 0;
+runData_toggle = 1;
 
 %% SET parameters
 % SET slip angle

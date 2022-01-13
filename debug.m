@@ -17,12 +17,12 @@ wr = 10;
 sf1 = 0.175;
 sf2 = 0.5;
 flist = zeros(1000, 3);
-% sinkage = 35.68;
-% [Fx, Fy, Fz] = RFT3Dfunc(wheeldata, slipAngle, wr, vcenter, sinkage, sf1, sf2);
-for i = 1:1000
-    sinkage = 10 + i/100*4;
-    [flist(i,1), flist(i,2), flist(i,3)] = RFT3Dfunc(wheeldata, slipAngle, wr, vcenter, sinkage, sf1, sf2);
-end
+sinkage = 35.68;
+[Fx, Fy, Fz] = RFT3Dfunc(wheeldata, slipAngle, wr, 20, sinkage, sf1, sf2)
+% for i = 1:1000
+%     sinkage = 10 + i/100*4;
+%     [flist(i,1), flist(i,2), flist(i,3)] = RFT3Dfunc(wheeldata, slipAngle, wr, vcenter, sinkage, sf1, sf2);
+% end
 
 % [idxOut, depthList, pile, under] = run_extractHmapFitTest(pointList, slipAngle, depth);
 % size(depthList)

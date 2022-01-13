@@ -29,8 +29,8 @@ load('output/all_smooth_data_2.mat')
 
 % load wheel point data
 
-% wheeldata = matfile('data/smooth_wheel_125.mat');
-wheeldata = matfile('data/grousered_wheel_125.mat');
+wheeldata = matfile('data/smooth_wheel_125.mat');
+% wheeldata = matfile('data/grousered_wheel_125.mat');
 % wheeldata = matfile('data/plate.mat');
 
 pointList = wheeldata.Points;
@@ -43,7 +43,7 @@ plotVelocity = 0;
 plotGeometry = 0;
 
 % 1 for run Catherine's data 
-runData_toggle = 0;
+runData_toggle = 1;
 
 %% SET parameters
 % SET slip angle
@@ -306,6 +306,7 @@ phiList = phi(idx);
 [f1List,f2List] = normalScale(phiList);
 
 netForce = f1List .* F1tilde + f2List .* F2tilde;
+% netForce(3,:) = F2tilde(3,:);
 Force = sum(netForce, 2);
 end
 
