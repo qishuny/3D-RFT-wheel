@@ -67,7 +67,7 @@ tic
 [e1List, e2List, vList, vHoriList, v1List, v23List, phi] = calc_velocity(normalList, pointList, wr, vcenter, radius, slipAngle);
 % Force Calc
 [betaList, gammaList] = calc_BetaGamma(normalList, e2List, v23List);
-[Force, netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
+[Force, netForce, idx] = calc_3D_rft(pointList, vList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
 toc
 
 % transfer to experiment result frame
@@ -194,13 +194,13 @@ for i=1:length(all_results)
     
 
     % Geometry & Velocity Calc
-    [e1List, e2List, ~, ~, ~, v23List, phi] = ...
+    [e1List, e2List, vList, ~, ~, v23List, phi] = ...
         calc_velocity(normalList, pointList, wr, vcenter, radius, slipAngle);
 
     % Force Calc
     [betaList, gammaList] = calc_BetaGamma(normalList, e2List, v23List);
     [Force, ~, ~] = ...
-        calc_3D_rft_sf(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
+        calc_3D_rft_sf(pointList, vList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
 
     Fsidewall = -Force(1);
     Ftractive = Force(2);
@@ -224,12 +224,15 @@ save('output/RFTsfoutput.mat','RFToutput');
 
 end
 
-function [Force,netForce, idx] = calc_3D_rft(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
+function [Force,netForce, idx] = calc_3D_rft(pointList,vList,  betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
 % depth = sand with respect to the center of the wheel mm
 depth = -radius + sinkage;
 
 % find points below the surface of the soil
-idx = pointList(3,:) < depth;
+idx1 = pointList(3,:) < depth;
+idx2 = dot(pointList,vList) >= -1e-5;
+idx = idx1 & idx2;
+
 forcePoints = pointList(:, idx);
 numofForce = size(forcePoints, 2);
 
@@ -268,12 +271,14 @@ netForce = f1List .* F1tilde + f2List .* F2tilde;
 Force = sum(netForce, 2);
 end
 
-function [Force,netForce, idx] = calc_3D_rft_sf(pointList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
+function [Force,netForce, idx] = calc_3D_rft_sf(pointList, vList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
 % depth = sand with respect to the center of the wheel mm
 depth = -radius + sinkage;
 
 % find points below the surface of the soil
-idx = pointList(3,:) < depth;
+idx1 = pointList(3,:) < depth;
+idx2 = dot(pointList,vList) >= -1e-5;
+idx = idx1 & idx2;
 forcePoints = pointList(:, idx);
 numofForce = size(forcePoints, 2);
 
@@ -465,7 +470,7 @@ alphaZ = sf .* (M(1) .* cos(0) ...
 
 alphaX = sf .* (M(6) .* cos(2 .* beta + gamma)...
     + M(7) .* cos(gamma)...
-    + M(8) .* sin(-2 .* beta + gamma)...
+    + M(8) .* cos(-2 .* beta + gamma)...
     + M(9) .* sin(2 .* beta));
 
 alphaX(idxg1) = -alphaX(idxg1);

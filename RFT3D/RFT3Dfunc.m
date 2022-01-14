@@ -1,7 +1,7 @@
 % 3D RFT Modeling on Wheels
 % Qishun Yu Catherine Pavlov
 % 02/21/2021
-function [Fx, Fy, Fz] = RFT3Dfunc(wheeldata, slipAngle, wr, vcenter, sinkage, sf1, sf2)
+function [Fx, Fy, Fz] = RFT3Dfunc(wheeldata, slipAngle, wr, vcenter, sinkage, scale)
 
 % sf1 for pileup sand
 % sf2 for normal sand
@@ -18,8 +18,7 @@ end
 
 % SET radius
 radius = 62.5;
-% SET scaling factor
-sf = 1;
+
 
 %% Single RFT calc
 
@@ -28,24 +27,24 @@ sf = 1;
 [e1List, e2List, vList, vHoriList, v1List, v23List, phi] = calc_velocity(normalList, pointList, wr, vcenter, radius, slipAngle);
 % Force Calc
 [betaList, gammaList] = calc_BetaGamma(normalList, e2List, v23List);
-[Force, netForce, idx] = calc_3D_rft(pointList, vList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
+[Fx, Fy, Fz] = calc_3D_rft(pointList, vList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
 
 
 % transfer to experiment result frame
-Fx = Force(2);
-Fy = -Force(1);
-Fz = Force(3);
+% Fx = Force(2);
+% Fy = -Force(1);
+% Fz = Force(3);
 
 
-function [Force,netForce, idx] = calc_3D_rft(pointList, vList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
+function [Fx, Fy, Fz] = calc_3D_rft(pointList, vList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf)
 % depth = sand with respect to the center of the wheel mm
 depth = -radius + sinkage;
 
 % find points below the surface of the soil
 idx1 = pointList(3,:) < depth;
-
 idx2 = dot(pointList,vList) >= -1e-5;
 idx = idx1 & idx2;
+
 forcePoints = pointList(:, idx);
 numofForce = size(forcePoints, 2);
 
@@ -56,15 +55,9 @@ forceGamma = gammaList(idx);
 
 ay1 = zeros(1,numofForce) + ay1;
  
-
-% scaling factor for depth
-coeff1 = 1.915315192989908e+03;
-coeff2 = 1.364833809455482;
-[sfList] = calc_sf(abs(depth - pointList(3,idx)), coeff1, coeff2);
-
 [ax23, az23] = calc_rft_alpha(forceBeta, forceGamma, sf);
-magF1 = -ay1 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3) .* sfList;
-magF2 = -ax23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3) .* sfList;
+magF1 = -ay1 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3);
+magF2 = -ax23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3);
 
 % F1 force in N
 F1tilde = magF1 .* e1List(:,idx);
@@ -72,16 +65,16 @@ F1tilde = magF1 .* e1List(:,idx);
 F2tilde = magF2 .* e2List(:,idx);
 F2tilde(3,:) = az23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10^-3) .* sfList;
 
-% % scale by 0.8
-% F1tilde = 0.8 .* F1tilde;
-% F2tilde = 0.8 .* F2tilde;
- 
+
 % scaling factor for angles
 phiList = phi(idx);
 [f1List,f2List] = normalScale(phiList);
 
 netForce = f1List .* F1tilde + f2List .* F2tilde;
 Force = sum(netForce, 2);
+Fx = Force(1);
+Fy = Force(2);
+Fz = Force(3);
 end
 
 
@@ -93,7 +86,7 @@ vcorx = -vcenter * sin(slipAngle);
 vcory = vcenter * cos(slipAngle);
 vcorz = 0;
 vcor = [vcorx; vcory; vcorz];
-w = -wr / radius;
+w = wr / radius;
 
 numofNormal = size(normalList, 2);
 %e2 unit axis
@@ -112,11 +105,11 @@ e2List(2, idx2) = temp2;
 
 % velocity
 rList = sqrt(pointList(2, :) .^ 2 + pointList(3, :) .^ 2);   
-angleList = atan2(pointList(3, :), pointList(2, :)) + pi/2;
+angleList = atan2(pointList(3, :), pointList(2, :));
 
 vx = zeros([1, size(angleList, 2)]) + vcor(1);
-vy = cos(angleList) .* rList .* w + vcor(2);
-vz = sin(angleList) .* rList .* w + vcor(3);
+vy = sin(angleList) .* rList .* w + vcor(2);
+vz = -cos(angleList) .* rList .* w + vcor(3);
 
 vList = [vx; 
     vy; 

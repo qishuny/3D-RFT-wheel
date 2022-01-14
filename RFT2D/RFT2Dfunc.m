@@ -9,7 +9,7 @@ normalList = wheeldata.Normals;
 
 [vList, e2List] = calc_velocity(normalList, pointList, ang_vel, vcenter, radius);
 [betaList, gammaList] = calc_BetaGamma(normalList, vList, e2List);
-[netX, netZ, idx, FxList, FzList] = calc_rft_2d(pointList, betaList, gammaList, areaList, sinkage, radius, scale);
+[netX, netZ, idx, FxList, FzList] = calc_rft_2d(pointList, vList, betaList, gammaList, areaList, sinkage, radius, scale);
 Fx = netX * wheelWidth;
 Fz = netZ * wheelWidth;
 forces = [Fx, Fz];
@@ -139,14 +139,16 @@ alphaX = sf .* (M(6) .* cos(2 .* beta + gamma)...
 % alphaX(idxg2) = -alphaX(idxg2);
 end
 
-function [netX, netZ, idx, FxList, FzList] = calc_rft_2d(pointList, betaList, gammaList, areaList, sinkage, radius, scale)
+function [netX, netZ, idx, FxList, FzList] = calc_rft_2d(pointList, vList, betaList, gammaList, areaList, sinkage, radius, scale)
 % depth = sand with respect to the center of the wheel mm
 depth = -radius + sinkage;
 
 % find points below the surface of the soil
-idx = pointList(2,:) < depth;
+idx1 = pointList(2,:) < depth;
 
+idx2 = dot(pointList,vList) >= -1e-5;
 
+idx = idx1 & idx2;
 forceBeta = betaList(idx);
 forceGamma = gammaList(idx);
 forceDepth = depth - pointList(2,idx);

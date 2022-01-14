@@ -1,78 +1,26 @@
-
+%%
 wheeldata = matfile('smooth_wheel_130_2D.mat');
-
 Fg = [80, 130, 150, 190];
 s = [-0.7, -0.5, -0.3, -0.1, 0, 0.1, 0.3, 0.5, 0.7];
-ng = numel(Fg); ns = numel(s);
 
 ang_vel = 0.5;
-% r_wheel = 65;
-% sinkage = 27.4;
-
-
 v0 = [1; 0; 0];
-% vcenter in [+x 0 0]
-
-
 
 MMSscale = 3.05;
+Fgi = Fg(1);
+slip = s(5);
+rwheel = 130;
+vcenter = (1-slip) * ang_vel * rwheel * v0;
+wheelWidth = 1.23 * rwheel;
 
-figure;
-sub(1) = subplot(3,2,1); hold on;
-sub(2) = subplot(3,2,2); hold on;
-sub(3) = subplot(3,2,3); hold on;
-sub(4) = subplot(3,2,4); hold on;
-sub(5) = subplot(3,2,5); hold on;
-sub(6) = subplot(3,2,6); hold on;
-
-for i = 1:ng
-    Fgi = Fg(i);
-
-    for j = 1:ns
-        slip = s(j);
-        
-        
-        r_wheel = 0.13;
-        w_wheel = 1.23*0.13;
-        rftwheel = [r_wheel, w_wheel];
-        vs = (1-slip)*ang_vel*r_wheel * v0;
-        coeff_generic = [0.206, 0.169, 0.212, 0.358, 0.055, -0.124, 0.253, 0.007, 0.088]; % from supplementary section of original paper
-        Mrft = MMSscale * coeff_generic;
-        
-        fun1 = @(r_z) (-Fgi + dot([0,1,0], compute_RFT_wheel(rftwheel, [0;0;r_z], vs, ang_vel, Mrft)));
-        z_sink1 = fsolve(fun1, -0.13/4);
-        
-        
-        
-        
-        rwheel = 130;
-        vcenter = (1-slip) * ang_vel * rwheel * v0;
-        wheelWidth = 1.23 * rwheel;
-        % calculate sinkage: Fz = Fg
-        fun = @(r_z) (-Fgi + dot([0,1], RFT2Dfunc(wheeldata, ang_vel, vcenter, r_z, rwheel, wheelWidth, MMSscale)));
-        z_sink = fsolve(fun, rwheel/4);
-%         z_sink = -z_sink1*1000;
-
-        forces1 = compute_RFT_wheel(rftwheel, [0;0;z_sink1], vs, ang_vel, Mrft );
-        forces = RFT2Dfunc(wheeldata, ang_vel, vcenter, z_sink, rwheel, wheelWidth, MMSscale);
-        
-        sinkage1(i,j) = -z_sink1;
-        drawbar1(i,j) = forces1(1);
-        Fz1(i,j) = forces1(2);
-        sinkage(i,j) = z_sink;
-        drawbar(i,j) = forces(1);
-        Fz(i,j) = forces(2);
-    end
-    
-    subplot(3,2,1); plot(s,sinkage(i,:)); ylabel('depth mine[mm]');
-    subplot(3,2,3); plot(s,drawbar(i,:)); ylabel('drawbar mine[N]');
-    subplot(3,2,5); plot(s,Fz(i,:)); ylabel('Fz mine[N]');
-    subplot(3,2,2); plot(s,1000 * sinkage1(i,:)); ylabel('depth not mine [mm]')
-    subplot(3,2,4); plot(s,drawbar1(i,:)); ylabel('drawbar not mine [N]');
-    subplot(3,2,6); plot(s,Fz1(i,:)); ylabel('Fz not mine [N]')
-end
-
-%%
+r_wheel = 0.13;
+w_wheel = 1.23*0.13;
+rftwheel = [r_wheel, w_wheel];
+vs = (1-slip)*ang_vel*r_wheel * v0;
+coeff_generic = [0.206, 0.169, 0.212, 0.358, 0.055, -0.124, 0.253, 0.007, 0.088]; % from supplementary section of original paper
+Mrft = MMSscale * coeff_generic;
+r_z = -0.006150557526070;
+forces = compute_RFT_wheel(rftwheel, [0;0;r_z], vs, ang_vel, Mrft)
 function forces = compute_RFT_wheel( wheel_geometry, pos, vel, angvel, M_rft )
 %COMPUTE_FT_WHEEL compute drag forces & torques associated with dynamic wheel
 % wheel is located in vehicle coordinates (+x to front, +z up)
@@ -132,6 +80,11 @@ function forces = compute_RFT_wheel( wheel_geometry, pos, vel, angvel, M_rft )
     Fx = 0;
     Fz = 0;
     omega = [0; angvel; 0];
+    riList = [];
+    betaList = [];
+    gammaList = [];
+    dFxList = [];
+    dFzList = [];
     
     for i = 1:it-1
         theta = (theta_range(i) + theta_range(i+1))/2;
@@ -146,18 +99,29 @@ function forces = compute_RFT_wheel( wheel_geometry, pos, vel, angvel, M_rft )
             gamma = atan2(-vi(3), -vi(1));
             beta = theta + pi/2;
 %             disp([beta, gamma])
-
+            
             [dFx, dFz] = computeRF( beta, gamma, M_rft, dA*10^4, -z_sink*100 );
 %             [ax, az] = computeAlphasMat( beta, gamma, M_rft );
 %             disp([ax, az])
 %             disp([dA, z_sink])
-            
+            riList = [riList, ri];
+            betaList = [betaList, beta];
+            gammaList = [gammaList, gamma];
+            dFxList = [dFxList, dFx];
+            dFzList = [dFzList, dFz];
             Fx = Fx + dFx; Fz = Fz + dFz;
             Torq = Torq + cross(ri, [dFx; 0; +dFz]); 
 %             disp([ri, [dFx;0;dFz]])
         end
+    
+    
+   
+%     quiver(pointList(1,:), pointList(2,:), e2List(1,:), e2List(2,:));
+
 
     end
+    figure()
+    scatter(riList(1,:), riList(3,:));
     Torq = Torq(2);
     forces = [Fx, Fz, Torq];  
     
@@ -183,8 +147,3 @@ function [dFx, dFz] = computeRF( beta, gamma, M, dA,z)
     dFx = z*dA*alphaX;
 
 end
-
-
-
-
-
