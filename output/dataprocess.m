@@ -5,7 +5,7 @@ load('output/all_smooth_data_2.mat')
 % load('output/RFTDEMPoly55output.mat')
 % load('output/RFTbalanceoutput.mat')
 
-load('output/RFTsfoutput.mat')
+load('output/RFTtestoutput.mat')
 % load('output/RFTDEMoptoutput.mat')
 
 

@@ -1,11 +1,7 @@
 % 3D RFT Modeling on Wheels
 % Qishun Yu Catherine Pavlov
 % 02/21/2021
-function [Fx, Fy, Fz] = RFT3Dfunc(wheeldata, slipAngle, wr, vcenter, sinkage, scale)
-
-% sf1 for pileup sand
-% sf2 for normal sand
-
+function [forces] = RFT3Dfunc(wheeldata, radius, slipAngle, wr, vcenter, sinkage, scale)
 % load wheel point data
 pointList = wheeldata.Points;
 areaList = wheeldata.Area;
@@ -16,10 +12,6 @@ if wr == 0
 end
 
 
-% SET radius
-radius = 62.5;
-
-
 %% Single RFT calc
 
 % Geometry & Velocity Calc
@@ -27,22 +19,102 @@ radius = 62.5;
 [e1List, e2List, vList, vHoriList, v1List, v23List, phi] = calc_velocity(normalList, pointList, wr, vcenter, radius, slipAngle);
 % Force Calc
 [betaList, gammaList] = calc_BetaGamma(normalList, e2List, v23List);
-[Fx, Fy, Fz] = calc_3D_rft(pointList, vList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf);
+[Fx, Fy, Fz, idx, netForce] = calc_3D_rft(pointList, normalList, vList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, scale);
+
+forces = [Fx; Fy; Fz];
+
+plotForce = 0;
+plotVelocity = 0 ;
+%% plot force
+if plotForce == 1
+    figure
+
+    plot3(pointList(1,:),pointList(2,:),pointList(3,:),'.','Color',[0.6,0.6,0.6],'MarkerSize',1)
+
+    hold on
+    pointList1 = pointList(:,idx);
+    X = pointList1(1,:);
+    Y = pointList1(2,:);
+    Z = pointList1(3,:);
+    U = netForce(1,:);
+    V = netForce(2,:);
+    W = netForce(3,:);
+    
+    q = quiver3(X, Y, Z, U, V, W);
+    mags = sqrt(sum(cat(2, q.UData(:), q.VData(:), ...
+            reshape(q.WData, numel(q.UData), [])).^2, 2));
+    
+
+    currentColormap = colormap(gca);
+    [~, ~, ind] = histcounts(mags, size(currentColormap, 1));
+
+    cmap = uint8(ind2rgb(ind(:), currentColormap) * 255);
+    cmap(:,:,4) = 255;
+    cmap = permute(repmat(cmap, [1 3 1]), [2 1 3]);
+
+    set(q.Head, ...
+    'ColorBinding', 'interpolated', ...
+    'ColorData', reshape(cmap(1:3,:,:), [], 4).');   %'
+    set(q.Tail, ...
+    'ColorBinding', 'interpolated', ...
+    'ColorData', reshape(cmap(1:2,:,:), [], 4).');
+    
+    title('3D-RFT Forces on Grousered Wheel');
+    daspect([1 1 1])
+    view(-55,15)
+    axis off
+end
+
+%% plot velocity
+gapSize = 20;
+if plotVelocity == 1  
+    %Plot selected velocity and v1,v23
+    figure
+    
+
+    quiver3(pointList(1,idx),pointList(2,idx),pointList(3,idx),vList(1,idx),vList(2,idx),vList(3,idx),1,'Color', [0,0.2,0.8]);
+    hold on
+    quiver3(pointList(1,idx),pointList(2,idx),pointList(3,idx),v1List(1,idx),v1List(2,idx),v1List(3,idx),1,'r');
+    quiver3(pointList(1,idx),pointList(2,idx),pointList(3,idx),v23List(1,idx),v23List(2,idx),v23List(3,idx),1,'g');
+    legend('velocity','v1','v23')
+    daspect([1 1 1])
+    
+
+    % Plot v23 and e2
+%     figure
+%     for k =1:gapSize:size(pointList,2)
+%         quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e2List(1,k),e2List(2,k),e2List(3,k),'g');
+%         hold on
+%         quiver3(pointList(1,k),pointList(2,k),pointList(3,k),v23List(1,k),v23List(2,k),v23List(3,k),'r');
+%         legend('e2','v23')
+%     %     text(pointList(1,k),pointList(2,k),pointList(3,k),string(gammaList(k)*180/pi))
+%         daspect([1 1 1])
+%     end
+
+    %Plot v1 and e1
+%     figure
+%     
+%     idxS = pointList(3,:) < -62.49;
+%     plot3(pointList(1,idxS),pointList(2,idxS),pointList(3,idxS),'ok','MarkerFaceColor',[0,0.5,0.5])
+%     for k =1:gapSize:size(pointList,2)
+%         quiver3(pointList(1,k),pointList(2,k),pointList(3,k),e1List(1,k),e1List(2,k),e1List(3,k),'g');
+%         hold on
+%         quiver3(pointList(1,k),pointList(2,k),pointList(3,k),v1List(1,k),v1List(2,k),v1List(3,k),'r');
+%         legend('e1','v1')
+%         daspect([1 1 1])
+%     end
+end
 
 
-% transfer to experiment result frame
-% Fx = Force(2);
-% Fy = -Force(1);
-% Fz = Force(3);
 
-
-function [Fx, Fy, Fz] = calc_3D_rft(pointList, vList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf)
+function [Fx, Fy, Fz, idx, netForce] = calc_3D_rft(pointList, normalList, vList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, sf)
+    
 % depth = sand with respect to the center of the wheel mm
 depth = -radius + sinkage;
 
 % find points below the surface of the soil
 idx1 = pointList(3,:) < depth;
-idx2 = dot(pointList,vList) >= -1e-5;
+idx2 = dot(normalList,vList) >= 0;
 idx = idx1 & idx2;
 
 forcePoints = pointList(:, idx);
@@ -56,14 +128,14 @@ forceGamma = gammaList(idx);
 ay1 = zeros(1,numofForce) + ay1;
  
 [ax23, az23] = calc_rft_alpha(forceBeta, forceGamma, sf);
-magF1 = -ay1 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3);
-magF2 = -ax23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3);
+magF1 = ay1 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3);
+magF2 = ax23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10 ^ -3);
 
 % F1 force in N
 F1tilde = magF1 .* e1List(:,idx);
 % F2 force in N
 F2tilde = magF2 .* e2List(:,idx);
-F2tilde(3,:) = az23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10^-3) .* sfList;
+F2tilde(3,:) = az23 .* abs(depth - pointList(3,idx)) .* (areaList(idx) .* 10^-3);
 
 
 % scaling factor for angles
@@ -79,14 +151,14 @@ end
 
 
 
-function [e1List, e2List, vList, vHoriList, v1List, v23List, phi] = calc_velocity(normalList, pointList, wr, vcenter, radius, slipAngle)
+function [e1List, e2List, vList, vHoriList, v1List, v23List, phi] = calc_velocity(normalList, pointList, w, vcenter, radius, slipAngle)
 
 % angular velocity radius/s
 vcorx = -vcenter * sin(slipAngle);
 vcory = vcenter * cos(slipAngle);
 vcorz = 0;
 vcor = [vcorx; vcory; vcorz];
-w = wr / radius;
+
 
 numofNormal = size(normalList, 2);
 %e2 unit axis
@@ -105,11 +177,11 @@ e2List(2, idx2) = temp2;
 
 % velocity
 rList = sqrt(pointList(2, :) .^ 2 + pointList(3, :) .^ 2);   
-angleList = atan2(pointList(3, :), pointList(2, :));
+angleList = atan2(pointList(3, :), pointList(2, :)) + pi/2;
 
 vx = zeros([1, size(angleList, 2)]) + vcor(1);
-vy = sin(angleList) .* rList .* w + vcor(2);
-vz = -cos(angleList) .* rList .* w + vcor(3);
+vy = cos(angleList) .* rList .* -w + vcor(2);
+vz = sin(angleList) .* rList .* -w + vcor(3);
 
 vList = [vx; 
     vy; 

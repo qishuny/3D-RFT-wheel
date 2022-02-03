@@ -9,8 +9,8 @@ function error = tuning_objective_fn(wheeldata, x, all_results)
 %initialize the error to 0
 error = 0;
 
-sf1 = x(1);
-sf2 = x(2);
+sf1 = x;
+% sf2 = x(2);
 
 n = length(all_results);
 for i=1:n
@@ -18,6 +18,8 @@ for i=1:n
    
     result = all_results(i);
     wr = result.Vry;
+    radius = 62.5;
+    w = wr/radius;
     sinkage = abs(result.avg_Z);
     slipAngle = result.beta * pi / 180;
     avg_Fx = -result.avg_Fy;
@@ -30,14 +32,14 @@ for i=1:n
 %     Fx = 0;
 %     Fy = 0;
 %     Fz = 0;
-    [Fx, Fy, Fz] = RFT3DDEMfunc(wheeldata, slipAngle, wr, sinkage, sf1, sf2);
+%     [Fx, Fy, Fz] = RFT3DDEMfunc(wheeldata, slipAngle, wr, sinkage, sf1, sf2);
     
-
+    [forces] = RFT3Dfunc(wheeldata, radius, slipAngle, w, 10, sinkage, sf1);
 %     err = (Fx - avg_Fx)^2/(avg_Fx^2) + (Fy - avg_Fy)^2/(avg_Fy^2) + (Fz - avg_Fz)^2/(avg_Fz^2);
-    err = (Fx - avg_Fx)^2 + (Fy - avg_Fy)^2 ;
+    err = (forces(1) - avg_Fx)^2 + (forces(2) - avg_Fy)^2 ;
     error = error + err;
 end
-error = double(error)    
+error = double(error);    
 end
 
 %x - [.6 .2 -.2 -.3 0 0]';

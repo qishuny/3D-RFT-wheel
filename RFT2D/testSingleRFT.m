@@ -1,5 +1,5 @@
 %%
-wheeldata = matfile('smooth_wheel_130_2D.mat');
+wheeldata = matfile('smooth_wheel_260_2D.mat');
 Fg = [80, 130, 150, 190];
 s = [-0.7, -0.5, -0.3, -0.1, 0, 0.1, 0.3, 0.5, 0.7];
 
@@ -12,15 +12,15 @@ slip = s(5);
 rwheel = 130;
 vcenter = (1-slip) * ang_vel * rwheel * v0;
 wheelWidth = 1.23 * rwheel;
-
-r_wheel = 0.13;
-w_wheel = 1.23*0.13;
-rftwheel = [r_wheel, w_wheel];
-vs = (1-slip)*ang_vel*r_wheel * v0;
-coeff_generic = [0.206, 0.169, 0.212, 0.358, 0.055, -0.124, 0.253, 0.007, 0.088]; % from supplementary section of original paper
-Mrft = MMSscale * coeff_generic;
-r_z = -0.006150557526070;
-forces = compute_RFT_wheel(rftwheel, [0;0;r_z], vs, ang_vel, Mrft)
+forces = RFT2Dfunc(wheeldata, ang_vel, vcenter, z_sink, rwheel, wheelWidth, MMSscale);
+% r_wheel = 0.13;
+% w_wheel = 1.23*0.13;
+% rftwheel = [r_wheel, w_wheel];
+% vs = (1-slip)*ang_vel*r_wheel * v0;
+% coeff_generic = [0.206, 0.169, 0.212, 0.358, 0.055, -0.124, 0.253, 0.007, 0.088]; % from supplementary section of original paper
+% Mrft = MMSscale * coeff_generic;
+% r_z = -0.006150557526070;
+% forces = compute_RFT_wheel(rftwheel, [0;0;r_z], vs, ang_vel, Mrft)
 function forces = compute_RFT_wheel( wheel_geometry, pos, vel, angvel, M_rft )
 %COMPUTE_FT_WHEEL compute drag forces & torques associated with dynamic wheel
 % wheel is located in vehicle coordinates (+x to front, +z up)

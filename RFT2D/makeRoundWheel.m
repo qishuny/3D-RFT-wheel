@@ -1,14 +1,13 @@
-
 clear all
 close all
 
 % radius in mm
-rho = 130;
+rho = 62.5;
 [pos_points, area_points, normal_points] = makecircle(rho);
 Points = pos_points';
 Area = area_points';
 Normals = normal_points';
-save('smooth_wheel_130_2D.mat', 'Points', 'Area', 'Normals');
+save('smooth_wheel_125_2D.mat', 'Points', 'Area', 'Normals');
 
 figure
 plot(Points(1,:),Points(2,:), 'ok','MarkerFaceColor',[0,0.5,0.5])

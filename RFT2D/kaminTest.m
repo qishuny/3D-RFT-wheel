@@ -1,5 +1,5 @@
 
-wheeldata = matfile('smooth_wheel_130_2D.mat');
+wheeldata = matfile('smooth_wheel_260_2D.mat');
 
 Fg = [80, 130, 150, 190];
 s = [-0.7, -0.5, -0.3, -0.1, 0, 0.1, 0.3, 0.5, 0.7];
@@ -12,10 +12,19 @@ ang_vel = 0.5;
 
 v0 = [1; 0; 0];
 % vcenter in [+x 0 0]
-
-
-
 MMSscale = 3.05;
+
+
+sinkage = zeros(ng, ns);
+drawbar = zeros(ng, ns);
+Fz = zeros(ng, ns);
+sinkage1 = zeros(ng, ns);
+drawbar1 = zeros(ng, ns);
+Fz1 = zeros(ng, ns);
+
+
+
+
 
 figure;
 sub(1) = subplot(3,2,1); hold on;

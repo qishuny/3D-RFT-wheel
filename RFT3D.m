@@ -230,6 +230,9 @@ depth = -radius + sinkage;
 
 % find points below the surface of the soil
 idx1 = pointList(3,:) < depth;
+
+% include sand deformation model
+
 idx2 = dot(pointList,vList) >= -1e-5;
 idx = idx1 & idx2;
 
