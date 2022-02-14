@@ -5,7 +5,7 @@ load('../output/all_smooth_data_2.mat')
 wheeldata = matfile('../data/smooth_wheel_125.mat');
 radius = 62.5;
 vcenter = 10;
-scale = 0.5;
+scale = 0.6;
 
 h = waitbar(0,'Initializing waitbar...');
 for i=1:length(all_results)
@@ -16,9 +16,9 @@ for i=1:length(all_results)
     slipAngle = result.beta * pi / 180;
     
 
-    [Force] = RFT3Dfunc(wheeldata, radius, slipAngle, w, vcenter, sinkage, scale);
+    [Force] = RFT3DNewfunc(wheeldata, radius, slipAngle, w, vcenter, sinkage, scale);
     Fsidewall = Force(1);
-    Ftractive = -Force(2);
+    Ftractive = Force(2);
     Fload = Force(3);
     RFToutput(i) = struct('ForceX', Ftractive, ...
         'ForceY', Fsidewall , ...

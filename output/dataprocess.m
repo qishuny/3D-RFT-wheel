@@ -294,9 +294,8 @@ for i = 1:slip_angle
     p = plot(x, depth_rft_avg(i,:), 'Color', color);
 end
 
-
 figure()
-sgtitle ('Wheel Forces Comparison between 3D-RFT+DEM and Experiment Results')
+sgtitle ('Wheel Forces Comparison between 3D-RFT and Experiment Results')
 subplot(1,3,2)
 title('Fy (Sidewall)')
 xlim([-1.1 1])

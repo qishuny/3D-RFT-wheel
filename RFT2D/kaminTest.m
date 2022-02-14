@@ -44,7 +44,7 @@ for i = 1:ng
         r_wheel = 0.13;
         w_wheel = 1.23*0.13;
         rftwheel = [r_wheel, w_wheel];
-        vs = (1-slip)*ang_vel*r_wheel * v0;
+        vs = (1-slip)*ang_vel*r_wheel * v0
         coeff_generic = [0.206, 0.169, 0.212, 0.358, 0.055, -0.124, 0.253, 0.007, 0.088]; % from supplementary section of original paper
         Mrft = MMSscale * coeff_generic;
         

@@ -21,7 +21,7 @@ end
 [betaList, gammaList] = calc_BetaGamma(normalList, e2List, v23List);
 [Fx, Fy, Fz, idx, netForce] = calc_3D_rft(pointList, normalList, vList, betaList, gammaList, e1List, e2List, areaList, phi, sinkage, radius, scale);
 
-forces = [Fx; Fy; Fz];
+forces = [Fx; -Fy; Fz];
 
 plotForce = 0;
 plotVelocity = 0 ;
@@ -282,37 +282,7 @@ end
 function [alphaX, alphaZ] = calc_rft_alpha(beta, gamma, sf)
 % using discrete Fourier transform fitting function [Li et al., 2013]
 % Fourier coefficients M
-A00 = 0.206;
-A10 = 0.169;
-B11 = 0.212;
-B01 = 0.358;
-BM11 = 0.055;
-C11 = -0.124;
-C01 = 0.253;
-CM11 = 0.007;
-D10 = 0.088;
-M = [A00, A10, B11, B01, BM11, C11, C01, CM11, D10];
-
-beta = wrapToPi(beta);
-gamma = wrapToPi(gamma);
-
-idxb1 = (beta >= -pi & beta <= -pi/2);
-idxb2 = (beta >= pi/2 & beta <= pi);
-
-beta(idxb1) = beta(idxb1) + pi;
-beta(idxb2) = beta(idxb2) - pi;
-beta = wrapToPi(beta);
-
-idxg1 = (gamma >= -pi & gamma <= -pi/2);
-idxg2 = (gamma >= pi/2 & gamma <= pi);
-
-beta(idxg1) = -beta(idxg1);
-beta(idxg2) = -beta(idxg2);
-
-gamma(idxg1) = -pi - gamma(idxg1);
-gamma(idxg2) = pi - gamma(idxg2);
-
-gamma = wrapToPi(gamma);
+M = [0.206, 0.169, 0.212, 0.358, 0.055, -0.124, 0.253, 0.007, 0.088];
 
 alphaZ = sf .* (M(1) .* cos(0) ...
     + M(2) .* cos(2 .* beta)...
@@ -324,9 +294,6 @@ alphaX = sf .* (M(6) .* cos(2 .* beta + gamma)...
     + M(7) .* cos(gamma)...
     + M(8) .* cos(-2 .* beta + gamma)...
     + M(9) .* sin(2 .* beta));
-
-alphaX(idxg1) = -alphaX(idxg1);
-alphaX(idxg2) = -alphaX(idxg2);
 end
 
 
