@@ -18,22 +18,22 @@ pointList2 = pointList(:,~idx);
 plot3(pointList1(1,:),pointList1(2,:),pointList1(3,:),'.','Color',[0.9,0.9,0.9],'MarkerSize',4)
 
 hold on
-plot3(pointList2(1,:),pointList2(2,:),pointList2(3,:),'.','Color',1/255*[0 102 119],'MarkerSize',4)
+plot3(pointList2(1,:),pointList2(2,:),pointList2(3,:),'.','Color',[0.1,0.1,0.1],'MarkerSize',4)
 
 
 [X,Y] = ndgrid(-80:2:80,-80:2:80);
 Z = 0 .* X .* Y;
 Z(:,:) = depth;
-plot3(X,Y,Z,'Color', 1/255*[170 102 0]);
+plot3(X,Y,Z,'Color', 1/255*[255 255 0]);
 % x = [-70 -70 70 70 -70];
 % y = [-70 70 70 -70 -70];
 % z = [depth depth depth depth depth];
 % plot3(x, y, z,'y')
 % patch(x,y,z,'yellow')
 
-% h = arrow([0, 0, 0],[0, 80, 0]);
-view(-100,15)
-legend('wheel points above sand surface','wheel points below sand surface','sand surface')
+h = arrow([0, 0, 0],[0, 80, 0]);
+view(-100,25)
+% legend('wheel points above sand surface','wheel points below sand surface','sand surface')
 % rectangle('Position',[-100,-100,200,200],'FaceColor','y','edgecolor','y')
 xlim([-80 80])
 ylim([-80 80])

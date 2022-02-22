@@ -1,10 +1,10 @@
 
 
-function [idxOut, depthListOut, pile, under] = SandDeformation(pointList, slipAngle, depth)
+function [idxOut, depthList, pile, under] = SandDeformation(pointList, slipAngle, depth, plot)
 slipAngle_degree = slipAngle*180/pi;
 num = size(pointList, 2);
 pointList(1,:) = pointList(1,:) - 0.5*(max(pointList(1,:))-min(pointList(1,:)));
-filename = strcat('output/sand', num2str(slipAngle_degree), '.mat');
+filename = strcat('../output/sand', num2str(slipAngle_degree), '.mat');
 
 sandData = matfile(filename);
 Xtrimed = sandData.Xtrimed;
@@ -24,7 +24,7 @@ idxOut = pile | under;
 
 
 depthList = zeros(1, num);
-depthList(pile) = abs(spz(pile) - pointList(3,pile)) * 1;
+depthList(pile) = abs(spz(pile) - pointList(3,pile)) * 0.1693;
 
 depthListPile = depthList(pile);
 pointListPile = pointList(:,pile);
@@ -34,42 +34,41 @@ depthList(under) = min(abs(depth - pointList(3,under)), abs(spz(under) - pointLi
 depthListUnder = depthList(under);
 pointListUnder = pointList(:,under);
 
-depthListOut = depthList(idxOut);
-plotToggle = 0;
+depthList(~idxOut) = 0;
 
 
-if plotToggle == 1
+
+if plot == 1
 % 
 %     figure
 %     s = surf(Xtrimed, Ytrimed, SandHmapnew, 'FaceAlpha', 0.5);
     
     figure
-    plot3(pointList(1,pile), pointList(2,pile), pointList(3,pile),'.','Color','r','MarkerSize',1);
+    plot3(pointList(1,pile), pointList(2,pile), pointList(3,pile),'.','Color',[0.1,0.1,0.1],'MarkerSize',3);
     hold on
-    plot3(pointList(1,under), pointList(2,under), pointList(3,under),'.','Color','y','MarkerSize',1);
-    plot3(pointList(1,(~under & ~pile)), pointList(2,(~under & ~pile)), pointList(3,(~under & ~pile)),'.','Color',[0.8,0.8,0.8],'MarkerSize',1);
-    s = surf(Xtrimed, Ytrimed, SandHmapnew, 'FaceAlpha', 0.5);
-    s.EdgeColor = 'none';
+    plot3(pointList(1,under), pointList(2,under), pointList(3,under),'.','Color',[0.2,0.2,0.2],'MarkerSize',3);
+    plot3(pointList(1,(~under & ~pile)), pointList(2,(~under & ~pile)), pointList(3,(~under & ~pile)),'.','Color',[0.9,0.9,0.9],'MarkerSize',1);
+    s = surf(Xtrimed, Ytrimed, SandHmapnew, 'FaceAlpha', 0.4);
+    s.EdgeColor = [0.9 0.9 0.9];
+    s.FaceColor = [1 1 0];
     axis equal 
-    
-    figure
-    plot3(pointList(1,pile), pointList(2,pile), pointList(3,pile),'.','Color','r','MarkerSize',1);
-    hold on
-%     for k =1:100:size(pointListPile,2)
+    daspect([1 1 1])
+    view(-105,25)
+%     figure
+%     plot3(pointList(1,pile), pointList(2,pile), pointList(3,pile),'.','Color','r','MarkerSize',1);
+%     hold on
+% 
+%     
+%     plot3(pointList(1,under), pointList(2,under), pointList(3,under),'.','Color','y','MarkerSize',1);
+%     
+%     for k =1:100:size(depthListUnder,2)
 %         hold on
-%         text(pointListPile(1,k),pointListPile(2,k),pointListPile(3,k),string(depthListPile(k)));
+%         text(pointListUnder(1,k),pointListUnder(2,k),pointListUnder(3,k),string(depthListUnder(k)));
 %     end
-    
-    plot3(pointList(1,under), pointList(2,under), pointList(3,under),'.','Color','y','MarkerSize',1);
-    
-    for k =1:100:size(depthListUnder,2)
-        hold on
-        text(pointListUnder(1,k),pointListUnder(2,k),pointListUnder(3,k),string(depthListUnder(k)));
-    end
-    plot3(pointList(1,(~under & ~pile)), pointList(2,(~under & ~pile)), pointList(3,(~under & ~pile)),'.','Color',[0.8,0.8,0.8],'MarkerSize',1);
-    s = surf(Xtrimed, Ytrimed, SandHmapnew, 'FaceAlpha', 0.5);
-    s.EdgeColor = 'none';
-    axis equal 
+%     plot3(pointList(1,(~under & ~pile)), pointList(2,(~under & ~pile)), pointList(3,(~under & ~pile)),'.','Color',[0.8,0.8,0.8],'MarkerSize',1);
+%     s = surf(Xtrimed, Ytrimed, SandHmapnew, 'FaceAlpha', 0.5);
+%     s.EdgeColor = 'none';
+%     axis equal 
 end
 
 

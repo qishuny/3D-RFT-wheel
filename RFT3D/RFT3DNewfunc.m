@@ -1,5 +1,8 @@
-function [forces] = RFT3DNewfunc(wheeldata, radius, slipAngle, w, vcenter, sinkage, scale)
+function [forces] = RFT3DNewfunc(wheeldata, radius, slipAngle, w, vcenter, sinkage, scale, plot)
 
+if nargin < 8 || isempty(plot)
+        plot = 0;
+end
 pointList = wheeldata.Points';
 areaList = wheeldata.Area';
 normalList = wheeldata.Normals';
@@ -40,11 +43,6 @@ a_inc = areaList(include,:);
 c_inc = pointList(include,:);
 d_inc = depthList(include,:);
 
-% figure
-% quiver3(c_inc(:,1),c_inc(:,2),c_inc(:,3),n_inc(:,1),n_inc(:,2),n_inc(:,3),1,'Color', [0,0.2,0.8]);
-% 
-% figure
-% quiver3(c_inc(:,1),c_inc(:,2),c_inc(:,3),v_inc(:,1),v_inc(:,2),v_inc(:,3),1,'Color', [0,0.2,0.8]);
 
 % generate basis for RFT decomposition
 % edge case: if plate is roughly horizontal, use v to define e2 -> stick to 2D RFT model
@@ -84,18 +82,29 @@ F3 =  f23' .* aZ .* [0,0,1];
 F_i = F1 + F2 + F3;
 
 % superposition: sum force from each plate element to calculate total force & moment
-
-
 Fi_mat = d_inc .* a_inc .* F_i .* 10^-3;
+Fi_mag_mat = vecnorm(Fi_mat');
+size(Fi_mat)
+size(Fi_mag_mat)
 forces = sum(Fi_mat)';
 forces(1) = - forces(1);
 
-plotForce = 1;
-if plotForce == 1
+
+if plot == 1
     figure
-
+    
     plot3(pointList(:,1),pointList(:,2),pointList(:,3),'.','Color',[0.6,0.6,0.6],'MarkerSize',1)
-
+    pointList1 = pointList(include,:);
+    hold on 
+    scatter3(pointList1(:,1),pointList1(:,2),pointList1(:,3), 5, Fi_mag_mat', 'filled','o')
+%     title('3D-RFT Forces on Grousered Wheel');
+    daspect([1 1 1])
+    cb = colorbar('southoutside'); 
+    cb.FontSize = 16;
+    view(-55,25)
+    axis off
+    
+    figure
     hold on
     pointList1 = pointList(include,:);
     X = pointList1(:,1);
@@ -105,7 +114,7 @@ if plotForce == 1
     V = Fi_mat(:,2);
     W = Fi_mat(:,3);
     
-    q = quiver3(X, Y, Z, U, V, W);
+    q = quiver3(X, Y, Z, U, V, W, 2);
     mags = sqrt(sum(cat(2, q.UData(:), q.VData(:), ...
             reshape(q.WData, numel(q.UData), [])).^2, 2));
     
@@ -124,11 +133,16 @@ if plotForce == 1
     'ColorBinding', 'interpolated', ...
     'ColorData', reshape(cmap(1:2,:,:), [], 4).');
     
-    title('3D-RFT Forces on Grousered Wheel');
     daspect([1 1 1])
-    cb = colorbar(); 
-    view(-55,15)
+    view(-55,25)
     axis off
+    
+%     figure
+%     quiver3(c_inc(:,1),c_inc(:,2),c_inc(:,3),n_inc(:,1),n_inc(:,2),n_inc(:,3),1,'Color', [0,0.2,0.8]);
+% 
+%     figure
+%     quiver3(c_inc(:,1),c_inc(:,2),c_inc(:,3),v_inc(:,1),v_inc(:,2),v_inc(:,3),1,'Color', [0,0.2,0.8]);
+
 end
 
 % return alpha in N/(cm^3)

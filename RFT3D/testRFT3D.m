@@ -15,8 +15,9 @@ for i=1:length(all_results)
     sinkage = abs(result.avg_Z);
     slipAngle = result.beta * pi / 180;
     
-
-    [Force] = RFT3DNewfunc(wheeldata, radius, slipAngle, w, vcenter, sinkage, scale);
+    %% rft function here
+%     [Force] = RFT3DNewfunc(wheeldata, radius, slipAngle, w, vcenter, sinkage, scale, 0);
+    [Force] = RFT3DDEMfunc(wheeldata, radius, slipAngle, w, vcenter, sinkage, scale, 0);
     Fsidewall = Force(1);
     Ftractive = Force(2);
     Fload = Force(3);
