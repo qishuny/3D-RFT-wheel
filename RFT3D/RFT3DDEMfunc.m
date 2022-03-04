@@ -33,7 +33,8 @@ forces = 0;
 % logical conditions that determine whether or not to count force on element
 leading_edge = dot(n_norm_vec, v_norm_vec, 2) > 0;      % plate's normal vector has a component in the penetration direction, so it maintains contact forces within sand grains                                 
 [intruding, depthList, pile, under] = SandDeformation(pointList', slipAngle, depth, plot);% plate is below sand surface
-include = leading_edge & intruding';
+% include = leading_edge & intruding';
+include = intruding';
 
 depthList = depthList';
 % isolate the elements that satisfy this condition for calculation
