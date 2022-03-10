@@ -16,8 +16,8 @@ for i=1:length(all_results)
     slipAngle = result.beta * pi / 180;
     
     %% rft function here
-%     [Force] = RFT3DNewfunc(wheeldata, radius, slipAngle, w, vcenter, sinkage, scale, 0);
-    [Force] = RFT3DDEMfunc(wheeldata, radius, slipAngle, w, vcenter, sinkage, scale, 0);
+    [Force] = RFT3DNewfunc(wheeldata, radius, slipAngle, w, vcenter, sinkage, scale, 0);
+%     [Force] = RFT3DDEMfunc(wheeldata, radius, slipAngle, w, vcenter, sinkage, scale, 0);
     Fsidewall = Force(1);
     Ftractive = Force(2);
     Fload = Force(3);
@@ -35,6 +35,6 @@ waitbar(1,h,'Completed.');
 disp("Done.");
 
 close(h);
-save('../output/RFTtestoutput.mat','RFToutput');
+save('../output/RFToutput.mat','RFToutput');
 
 

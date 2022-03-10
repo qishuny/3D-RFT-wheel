@@ -1,6 +1,6 @@
 close all
 
-wheeldata = matfile('data/grousered_wheel_125.mat');
+wheeldata = matfile('../data/grousered_wheel_125.mat');
 pointList = wheeldata.Points;
 pointList(1,:) = pointList(1,:) - 30;
 areaList = wheeldata.Area;
@@ -49,3 +49,4 @@ Rz = [cos(thetaz), -sin(thetaz), 0;
 Points = Rz * Points;
 Normals = Rz * Normals;
 end
+
