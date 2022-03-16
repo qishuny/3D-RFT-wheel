@@ -84,7 +84,7 @@ Yqr = reshape(rotXY(:,2), size(Ytrimed,1), []);
 
 
 idxWheelX = Xqr(:, :) <=  wheelWidth / 2 + 2 & Xqr(:, :) >= - wheelWidth/ 2 - 2;
-idxWheelY = Yqr(:, :) <= wheelDiameter/ 2  + 2& Yqr(:, :) >= - wheelDiameter/ 2 -2;
+idxWheelY = Yqr(:, :) <= wheelDiameter/ 2  + 7& Yqr(:, :) >= - wheelDiameter/ 2 -7;
 
 idx = idxWheelX & idxWheelY;
 SandHmapnew = SandHmapOriginal;

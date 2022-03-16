@@ -43,7 +43,7 @@ plotVelocity = 0;
 plotGeometry = 0;
 
 % 1 for run all data 
-runData_toggle = 1;
+runData_toggle = 0;
 
 %% SET parameters
 % SET slip angle
@@ -200,13 +200,13 @@ depth = -radius + sinkage;
 
 
 % old method
-[idx, depthList] = run_extractHmap(pointList, slipAngle * 180 / pi, abs(sinkage / 1000));
+% [idx, depthList] = run_extractHmap(pointList, slipAngle * 180 / pi, abs(sinkage / 1000));
 
 % new fit method
 % [idx, depthList] = run_extractHmapFit(pointList, slipAngle * 180 / pi, abs(sinkage / 1000));
-% [idx, depthList] = run_extractHmapFitSmooth(pointList, slipAngle * 180 / pi, abs(sinkage / 1000));
-% idx = pointList(3,:) < depth;
-% depthList = abs(depth - pointList(3,idx));
+[idx, depthList] = run_extractHmapFitSmooth(pointList, slipAngle * 180 / pi, abs(sinkage / 1000));
+idx = pointList(3,:) < depth;
+depthList = abs(depth - pointList(3,idx));
 forcePoints = pointList(:, idx);
 numofForce = size(forcePoints, 2);
 
