@@ -1,8 +1,8 @@
 load('../output/all_smooth_data_2.mat')
 load('../output/RFToutput.mat')
-% load('../output/RFTSandoutput.mat')
-
-
+RFTori = RFToutput;
+load('../output/RFTSandoutput.mat')
+RFTnew = RFToutput;
 
 x = [-1 -0.7 -0.5 -0.2 0 0.23 0.5 0.75 0.9];
 y = [0 15 30 45 60 75 90];
@@ -15,12 +15,17 @@ FxRFT = cell(9,7);
 FyRFT = cell(9,7);
 FzRFT = cell(9,7);
 
+FxRFTsand = cell(9,7);
+FyRFTsand = cell(9,7);
+FzRFTsand = cell(9,7);
+
 depth = cell(9,7);
 depthRFT = cell(9,7);
-
+depthRFTsand = cell(9,7);
 for i=1:length(all_results)
     exp_result = all_results(i);
-    rft_result = RFToutput(i);
+    rft_result = RFTori(i);
+    rftsand_result = RFTnew(i);
     %Select color of plotted point
     [column] = switchstuff(exp_result.Vry);
     [column_rft] = switchstuff(rft_result.wr);
@@ -35,8 +40,13 @@ for i=1:length(all_results)
             FyRFT{column, 1} = [FyRFT{column, 1} rft_result.ForceY];
             FzRFT{column, 1} = [FzRFT{column, 1} rft_result.ForceZ];
             
+            FxRFTsand{column, 1} = [FxRFTsand{column, 1} rftsand_result.ForceX];
+            FyRFTsand{column, 1} = [FyRFTsand{column, 1} rftsand_result.ForceY];
+            FzRFTsand{column, 1} = [FzRFTsand{column, 1} rftsand_result.ForceZ];
+            
             depth{column, 1} = [depth{column, 1} -exp_result.avg_Z];
             depthRFT{column, 1} = [depthRFT{column, 1} -rft_result.depth];
+            depthRFTsand{column, 1} = [depthRFTsand{column, 1} -rftsand_result.depth];
         case 15
             
             Fx{column, 2} = [Fx{column, 2} -exp_result.avg_Fy];
@@ -47,9 +57,13 @@ for i=1:length(all_results)
             FyRFT{column, 2} = [FyRFT{column, 2} rft_result.ForceY];
             FzRFT{column, 2} = [FzRFT{column, 2} rft_result.ForceZ];
             
+            FxRFTsand{column, 2} = [FxRFTsand{column, 2} rftsand_result.ForceX];
+            FyRFTsand{column, 2} = [FyRFTsand{column, 2} rftsand_result.ForceY];
+            FzRFTsand{column, 2} = [FzRFTsand{column, 2} rftsand_result.ForceZ];
+            
             depth{column, 2} = [depth{column, 2} -exp_result.avg_Z];
             depthRFT{column, 2} = [depthRFT{column, 2} -rft_result.depth];
-            
+            depthRFTsand{column, 2} = [depthRFTsand{column, 2} -rftsand_result.depth];
         case 30
             
             Fx{column, 3} = [Fx{column, 3} -exp_result.avg_Fy];
@@ -60,9 +74,13 @@ for i=1:length(all_results)
             FyRFT{column, 3} = [FyRFT{column, 3} rft_result.ForceY];
             FzRFT{column, 3} = [FzRFT{column, 3} rft_result.ForceZ];
             
+            FxRFTsand{column, 3} = [FxRFTsand{column, 3} rftsand_result.ForceX];
+            FyRFTsand{column, 3} = [FyRFTsand{column, 3} rftsand_result.ForceY];
+            FzRFTsand{column, 3} = [FzRFTsand{column, 3} rftsand_result.ForceZ];
+            
             depth{column, 3} = [depth{column, 3} -exp_result.avg_Z];
             depthRFT{column, 3} = [depthRFT{column, 3} -rft_result.depth];
-            
+            depthRFTsand{column, 3} = [depthRFTsand{column, 3} -rftsand_result.depth];
         case 45
             
             Fx{column, 4} = [Fx{column, 4} -exp_result.avg_Fy];
@@ -73,9 +91,13 @@ for i=1:length(all_results)
             FyRFT{column, 4} = [FyRFT{column, 4} rft_result.ForceY];
             FzRFT{column, 4} = [FzRFT{column, 4} rft_result.ForceZ];
             
+            FxRFTsand{column, 4} = [FxRFTsand{column, 4} rftsand_result.ForceX];
+            FyRFTsand{column, 4} = [FyRFTsand{column, 4} rftsand_result.ForceY];
+            FzRFTsand{column, 4} = [FzRFTsand{column, 4} rftsand_result.ForceZ];
+            
             depth{column, 4} = [depth{column, 4} -exp_result.avg_Z];
             depthRFT{column, 4} = [depthRFT{column, 4} -rft_result.depth];
-            
+            depthRFTsand{column, 4} = [depthRFTsand{column, 4} -rftsand_result.depth];
         case 60
             
             Fx{column, 5} = [Fx{column, 5} -exp_result.avg_Fy];
@@ -86,9 +108,14 @@ for i=1:length(all_results)
             FyRFT{column, 5} = [FyRFT{column, 5} rft_result.ForceY];
             FzRFT{column, 5} = [FzRFT{column, 5} rft_result.ForceZ];
             
+            FxRFTsand{column, 5} = [FxRFTsand{column, 5} rftsand_result.ForceX];
+            FyRFTsand{column, 5} = [FyRFTsand{column, 5} rftsand_result.ForceY];
+            FzRFTsand{column, 5} = [FzRFTsand{column, 5} rftsand_result.ForceZ];
+            
+            
             depth{column, 5} = [depth{column, 5} -exp_result.avg_Z];
             depthRFT{column, 5} = [depthRFT{column, 5} -rft_result.depth];
-            
+            depthRFTsand{column, 5} = [depthRFTsand{column, 5} -rftsand_result.depth];
         case 75
             
             Fx{column, 6} = [Fx{column, 6} -exp_result.avg_Fy];
@@ -99,9 +126,14 @@ for i=1:length(all_results)
             FyRFT{column, 6} = [FyRFT{column, 6} rft_result.ForceY];
             FzRFT{column, 6} = [FzRFT{column, 6} rft_result.ForceZ];
             
+            FxRFTsand{column, 6} = [FxRFTsand{column, 6} rftsand_result.ForceX];
+            FyRFTsand{column, 6} = [FyRFTsand{column, 6} rftsand_result.ForceY];
+            FzRFTsand{column, 6} = [FzRFTsand{column, 6} rftsand_result.ForceZ];
+            
+            
             depth{column, 6} = [depth{column, 6} -exp_result.avg_Z];
             depthRFT{column, 6} = [depthRFT{column, 6} -rft_result.depth];
-            
+            depthRFTsand{column, 6} = [depthRFTsand{column, 6} -rftsand_result.depth];
         case 90
             
             Fx{column, 7} = [Fx{column, 7} -exp_result.avg_Fy];
@@ -112,8 +144,14 @@ for i=1:length(all_results)
             FyRFT{column, 7} = [FyRFT{column, 7} rft_result.ForceY];
             FzRFT{column, 7} = [FzRFT{column, 7} rft_result.ForceZ];
             
+            FxRFTsand{column, 7} = [FxRFTsand{column, 7} rftsand_result.ForceX];
+            FyRFTsand{column, 7} = [FyRFTsand{column, 7} rftsand_result.ForceY];
+            FzRFTsand{column, 7} = [FzRFTsand{column, 7} rftsand_result.ForceZ];
+            
+            
             depth{column, 7} = [depth{column, 7} -exp_result.avg_Z];
             depthRFT{column, 7} = [depthRFT{column, 7} -rft_result.depth];
+            depthRFTsand{column, 7} = [depthRFTsand{column, 7} -rftsand_result.depth];
         otherwise
             color = 'k';
     end
@@ -133,8 +171,14 @@ Fx_rft_avg = zeros(9, 7);
 Fy_rft_avg = zeros(9, 7);
 Fz_rft_avg = zeros(9, 7);
 
+Fx_rftsand_avg = zeros(9, 7);
+Fy_rftsand_avg = zeros(9, 7);
+Fz_rftsand_avg = zeros(9, 7);
+
 depth_avg = zeros(9, 7);
 depth_rft_avg = zeros(9, 7);
+depth_rftsand_avg = zeros(9, 7);
+
 
 for i = 1:9
     for j = 1:7
@@ -150,8 +194,13 @@ for i = 1:9
         Fy_rft_avg(i,j) = mean(FyRFT{i, j});
         Fz_rft_avg(i,j) = mean(FzRFT{i, j});
         
+        Fx_rftsand_avg(i,j) = mean(FxRFTsand{i, j});
+        Fy_rftsand_avg(i,j) = mean(FyRFTsand{i, j});
+        Fz_rftsand_avg(i,j) = mean(FzRFTsand{i, j});
+        
         depth_avg(i,j) = mean(depth{i, j});
         depth_rft_avg(i,j) = mean(depthRFT{i, j});
+        depth_rftsand_avg(i,j) = mean(depthRFTsand{i, j});
     end
 end
 
@@ -166,8 +215,14 @@ Fx_rft_avg = Fx_rft_avg';
 Fy_rft_avg = Fy_rft_avg';
 Fz_rft_avg = Fz_rft_avg';
 
+
+Fx_rftsand_avg = Fx_rftsand_avg';
+Fy_rftsand_avg = Fy_rftsand_avg';
+Fz_rftsand_avg = Fz_rftsand_avg';
+
 depth_avg = depth_avg';
 depth_rft_avg = depth_rft_avg';
+depth_rftsand_avg = depth_rftsand_avg';
 
 deltaX = 0;
 deltaY = 0;
@@ -386,6 +441,206 @@ legg = legend(leg,'0', '15', '30', '45', '60');
 title(legg, 'Slip Angle');
 hold off
 
+%%
+fig = figure()
+
+for i = 1:slip_angle
+    switch i
+        case 1
+            color = cmuColor('red-web');
+        case 2
+            color = cmuColor('gold');
+        case 3
+            color = cmuColor('teal');
+        case 4
+            color = cmuColor('sky-blue');
+        case 5
+            color = cmuColor('palladian-green');
+        case 6
+            color = cmuColor('blue-thread');
+        case 7
+            color = cmuColor('scots-rose');
+        otherwise
+            color = 'k';
+    end
+    subplot(5,3,1 + (i-1) * 3)
+    e = errorbar(x,Fx_avg(i,:),Fx_err(i,:),'o');
+    e.Color = color;
+    hold on
+    plot(x, Fx_rft_avg(i,:), '--','Color', color);
+    plot(x, Fx_rftsand_avg(i,:), 'Color', color);
+    xlim([-1.1 1])
+    xticks([-1 -0.5 0 0.5 1])
+    hold on
+    
+    
+    subplot(5,3,2 + (i-1) * 3)
+    e = errorbar(x,Fy_avg(i,:),Fy_err(i,:),'o');
+    e.Color = color;
+    hold on
+    plot(x, Fy_rft_avg(i,:), '--','Color', color);
+    plot(x, Fy_rftsand_avg(i,:), 'Color', color);
+    if i == 1
+        ylim([-5 5])
+    end
+    xlim([-1.1 1])
+    hold on
+    
+    subplot(5,3,3 + (i-1) * 3)
+    e = errorbar(x,Fz_avg(i,:),Fz_err(i,:),'o');
+    e.Color = color;
+    hold on
+    plot(x, Fz_rft_avg(i,:), '--','Color', color);
+    plot(x, Fz_rftsand_avg(i,:), 'Color', color);
+    xlim([-1.1 1])
+    hold on
+    
+
+end
+han=axes(fig,'visible','off'); 
+han.XLabel.Visible='on';
+han.YLabel.Visible='on';
+ylabel(han,'Force (N)');
+xlabel(han,'Slip Ratio');
+legend('x', 'y', 'z');
+
+% leg(1) = plot(NaN, NaN, 'o', 'MarkerEdgeColor', cmuColor('red-web'));
+% leg(2) = plot(NaN, NaN, 'o', 'MarkerEdgeColor', cmuColor('gold'));
+% leg(3) = plot(NaN, NaN, 'o', 'MarkerEdgeColor', cmuColor('teal'));
+% leg(4) = plot(NaN, NaN, 'o', 'MarkerEdgeColor', cmuColor('sky-blue'));
+% leg(5) = plot(NaN, NaN, 'o', 'MarkerEdgeColor', cmuColor('palladian-green'));
+% legg = legend(leg,'0', '15', '30', '45', '60');
+% title(legg, 'Slip Angle');
+% hold off
+%% plot forces by slip angle
+N = 5;
+betas = [0 15 30 45 60 75 90];
+fig = figure();
+tiles = tiledlayout(3, N, 'TileSpacing', 'tight');
+tiles.Padding = 'compact';
+ax = gobjects(3,N);
+% title(tiles, 'Wheel Forces by Slip Angle', 'Interpreter','latex', 'FontSize', 20)
+xlabel(tiles, 'Slip Ratio', 'Interpreter','latex', 'FontSize', 16)
+for i=1:N
+    ax(1,i) = nexttile;
+    title([num2str(betas(i)), '$^\circ$'])
+    axis([-1.1 1 -40 5])
+    hold on
+    ylabel('$F_x (N)$', 'FontSize', 16)
+    if i>1
+        set(gca, 'YColor', 'none')
+    end
+    set(gca, 'XColor', 'none')
+end
+ for i=1:N
+    ax(2,i) = nexttile;
+    axis([-1.1 1 -40 5])
+    hold on
+    ylabel('$F_y (N)$', 'FontSize', 16)
+    if i>1
+        set(gca, 'YColor', 'none')
+    end
+    set(gca, 'XColor', 'none')
+end
+
+for i=1:N
+    ax(3,i) = nexttile;
+    axis([-1.1 1 10 40])
+    hold on
+    ylabel('$F_z (N)$', 'FontSize', 16)
+    if i>1
+        set(gca, 'YColor', 'none')
+    end
+end
+
+for i=1:N
+    % Plot x force model
+    switch i
+        case 1
+            color = cmuColor('red-web');
+        case 2
+            color = cmuColor('gold');
+        case 3
+            color = cmuColor('teal');
+        case 4
+            color = cmuColor('sky-blue');
+        case 5
+            color = cmuColor('palladian-green');
+        case 6
+            color = cmuColor('blue-thread');
+        case 7
+            color = cmuColor('scots-rose');
+        otherwise
+            color = 'k';
+    end
+    plot(ax(1,i), x, Fx_rft_avg(i,:), '--', 'Color', color)
+    plot(ax(1,i), x, Fx_rftsand_avg(i,:), 'Color', color);
+    e = errorbar(ax(1,i), x,Fx_avg(i,:),Fx_err(i,:),'o');
+    e.Color = color;
+end
+
+for i=1:N
+    % Plot y force model
+    switch i
+        case 1
+            color = cmuColor('red-web');
+        case 2
+            color = cmuColor('gold');
+        case 3
+            color = cmuColor('teal');
+        case 4
+            color = cmuColor('sky-blue');
+        case 5
+            color = cmuColor('palladian-green');
+        case 6
+            color = cmuColor('blue-thread');
+        case 7
+            color = cmuColor('scots-rose');
+        otherwise
+            color = 'k';
+    end
+    plot(ax(2,i), x, Fy_rft_avg(i,:), '--', 'Color', color)
+    plot(ax(2,i), x, Fy_rftsand_avg(i,:), 'Color', color);
+    e = errorbar(ax(2,i), x,Fy_avg(i,:),Fy_err(i,:),'o');
+    e.Color = color;
+end
+
+for i=1:N
+    % Plot x force model
+    switch i
+        case 1
+            color = cmuColor('red-web');
+        case 2
+            color = cmuColor('gold');
+        case 3
+            color = cmuColor('teal');
+        case 4
+            color = cmuColor('sky-blue');
+        case 5
+            color = cmuColor('palladian-green');
+        case 6
+            color = cmuColor('blue-thread');
+        case 7
+            color = cmuColor('scots-rose');
+        otherwise
+            color = 'k';
+    end
+    plot(ax(3,i), x, Fz_rft_avg(i,:), '--', 'Color', color)
+    plot(ax(3,i), x, Fz_rftsand_avg(i,:), 'Color', color);
+    e = errorbar(ax(3,i), x,Fz_avg(i,:),Fz_err(i,:),'o');
+    e.Color = color;
+end
+
+leg(1) = plot(ax(1,1), NaN, NaN );
+leg(2) = plot(ax(1,1), NaN, NaN);
+leg(3) = plot(ax(1,1), NaN, NaN);
+leg = legend('3D-RFT','3D-RFT + Sand','Experiment');
+leg.Layout.Tile = 'south';
+bigax = axes(fig, 'visible', 'off');
+xlabel(bigax, 'Slip Ratio')
+
+hold off
+%% plor force error
 
 
 figure()
