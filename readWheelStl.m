@@ -4,9 +4,13 @@ clc
 
 %% grousered wheel
 TRG = stlread('wheel model/grousered_wheel2mm.STL');
+figure()
+hold on
 trisurf(TRG);
 daspect([1 1 1]);
-
+view([-20 105])
+axis off
+hold off
 Points_grousered = incenter(TRG)';
 Normals_grousered = faceNormal(TRG)';
 Area_grousered = generateArea(TRG.Points', TRG.ConnectivityList');

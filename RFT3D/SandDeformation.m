@@ -54,21 +54,19 @@ if plot == 1
     axis equal 
     daspect([1 1 1])
     view(-105,25)
-%     figure
-%     plot3(pointList(1,pile), pointList(2,pile), pointList(3,pile),'.','Color','r','MarkerSize',1);
-%     hold on
-% 
-%     
-%     plot3(pointList(1,under), pointList(2,under), pointList(3,under),'.','Color','y','MarkerSize',1);
-%     
-%     for k =1:100:size(depthListUnder,2)
-%         hold on
-%         text(pointListUnder(1,k),pointListUnder(2,k),pointListUnder(3,k),string(depthListUnder(k)));
-%     end
-%     plot3(pointList(1,(~under & ~pile)), pointList(2,(~under & ~pile)), pointList(3,(~under & ~pile)),'.','Color',[0.8,0.8,0.8],'MarkerSize',1);
-%     s = surf(Xtrimed, Ytrimed, SandHmapnew, 'FaceAlpha', 0.5);
-%     s.EdgeColor = 'none';
-%     axis equal 
+    figure
+    plot3(pointList(1,pile), pointList(2,pile), pointList(3,pile),'.','Color','r','MarkerSize',7);
+    hold on
+
+    
+    plot3(pointList(1,under), pointList(2,under), pointList(3,under),'.','Color','b','MarkerSize',7);
+    
+    plot3(pointList(1,(~under & ~pile)), pointList(2,(~under & ~pile)), pointList(3,(~under & ~pile)),'.','Color',[0.8,0.8,0.8],'MarkerSize',1);
+    s = surf(Xtrimed, Ytrimed, SandHmapnew, 'FaceAlpha', 0.5);
+    s.EdgeColor = 'none';
+    axis equal 
+    legend('pile-up','undisturbed')
+    view(-105,25)
 end
 
 
