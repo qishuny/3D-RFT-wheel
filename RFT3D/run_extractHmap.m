@@ -8,8 +8,8 @@ num = size(pointList, 2);
 
 wheelDiameter = 0.125; %m
 wheelWidth = 0.06; %m
-sinkage = 0.04; %m
-
+% sinkage = 0.04; %m
+sinkage = sink;
 %grid per m
 n = 200;
 
@@ -55,18 +55,12 @@ SandHmapOriginal = sandHmap(idxY, idxX);
 
 %% 
 
-
 XY = [Xtrimed(:) Ytrimed(:)];  
 theta = slipAngle;
 R = [cosd(theta) -sind(theta); sind(theta) cosd(theta)];
 rotXY = XY * R';
 Xqr = reshape(rotXY(:,1), size(Xtrimed,1), []);
 Yqr = reshape(rotXY(:,2), size(Ytrimed,1), []);
-
-
-
-
-
 
 idxWheelX = Xqr(:, :) <=  wheelWidth / 2 + 2 & Xqr(:, :) >= - wheelWidth/ 2 - 2;
 idxWheelY = Yqr(:, :) <= wheelDiameter/ 2  + 2& Yqr(:, :) >= - wheelDiameter/ 2 -2;
@@ -92,14 +86,11 @@ for i = 1:size(Xtrimed,1)
     end
 end
 
-
-
 pointListOriginal = rotateZ(pointListOriginal, -slipAngle * pi/180);
 spz = interp2(double(Xtrimed), double(Ytrimed), double(SandHmapnew), pointListOriginal(1,:)', pointListOriginal(2,:)');
 spz = spz';
 
 depth =  - wheelDiameter/ 2 + sink * 1000;
-depth
 pile = pointListOriginal(3,:) < spz & pointListOriginal(3,:) > depth;
 under = pointListOriginal(3,:) < spz & pointListOriginal(3,:) <= depth;
 idxOut = pile | under;
@@ -115,9 +106,6 @@ depthListUnder = depthList(under);
 pointListUnder = pointList(:,under);
 
 depthList(~idxOut) = 0;
-
-
-
 
 if plotToggle == 1
 
@@ -158,7 +146,6 @@ if plotToggle == 1
     legend('pile-up','undisturbed')
     view(-105,25)
 
-   
 end
 
 
