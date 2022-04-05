@@ -1,4 +1,4 @@
-function [forces] = RFT3DNewfunc(wheeldata, radius, slipAngle, w, vcenter, sinkage, scale, plot)
+function [forces] = RFT3DSandfunc(wheeldata, radius, slipAngle, w, vcenter, sinkage, scale, plot)
 
 if nargin < 8 || isempty(plot)
         plot = 0;
@@ -28,14 +28,17 @@ vz = sin(angleList) .* rList .* -w + vcor(3);
 v_vec = [vx vy vz];
 v_norm_vec = v_vec ./ vecnorm(v_vec, 2, 2);
 n_norm_vec = normalList ./ vecnorm(normalList, 2, 2);
-forces = 0;
 
 % logical conditions that determine whether or not to count force on element
-leading_edge = dot(n_norm_vec, v_norm_vec, 2) > 0;      % plate's normal vector has a component in the penetration direction, so it maintains contact forces within sand grains
-intruding = pointList(:,3) < depth;                                  % plate is below sand surface
-include = leading_edge & intruding;
+leading_edge = dot(n_norm_vec, v_norm_vec, 2) > 0;      % plate's normal vector has a component in the penetration direction, so it maintains contact forces within sand grains                                 
+%run the simulation in real-time (MUST INCLUDE BK_terra PATH)
+% [intruding, depthList, pile, under] = run_extractHmap(pointList', slipAngle * 180 / pi, abs(sinkage / 1000), plot);
+%run the saved heightmap from simulation
+[intruding, depthList, pile, under] = SandDeformation(pointList', slipAngle, depth, plot);% plate is below sand surface
+include = leading_edge & intruding';
 
-depthList = depth - pointList(:,3);
+
+depthList = depthList';
 % isolate the elements that satisfy this condition for calculation
 n_inc = n_norm_vec(include,:);
 v_inc = v_norm_vec(include,:);
