@@ -158,7 +158,7 @@ Sand.resolve_collision(indices,zvec,velocity);
 %or update one step multiple times (this is essentially what is happening
 %in Sand.steady_state
 Sand.update_onestep;
-for i=1:140
+for i=1:300
     Sand.update_onestep;
     %for visualizing dynamics of Sand
 %     visualizeContext.visualize(Sand.matrix,lines_wcoord);
@@ -192,7 +192,7 @@ for i = 1:length(X)
 %     Sand.steady_state('off');
     Sand.update_onestep;
     Sand.resolve_collision(indices,zvec,velocity);
-    for steadystate=1:200
+    for steadystate=1:1000
         Sand.update_onestep;
         Sand.resolve_collision(indices,zvec,velocity);
 %         Sand.resolve_collision(indices,zvec,velocity);
