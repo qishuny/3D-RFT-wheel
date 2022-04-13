@@ -32,10 +32,9 @@ n_norm_vec = normalList ./ vecnorm(normalList, 2, 2);
 % logical conditions that determine whether or not to count force on element
 leading_edge = dot(n_norm_vec, v_norm_vec, 2) > 0;      % plate's normal vector has a component in the penetration direction, so it maintains contact forces within sand grains                                 
 %run the simulation in real-time (MUST INCLUDE BK_terra PATH)
-addpath('../BK_terra')  
-[intruding, depthList, pile, under] = run_extractHmap(pointList', slipAngle * 180 / pi, abs(sinkage / 1000), plot);
+% [intruding, depthList, pile, under] = run_extractHmap(pointList', slipAngle * 180 / pi, abs(sinkage / 1000), plot);
 %run the saved heightmap from simulation
-% [intruding, depthList, pile, under] = SandDeformation(pointList', slipAngle, depth, plot);% plate is below sand surface
+[intruding, depthList, pile, under] = SandDeformation(pointList', slipAngle, depth, plot);% plate is below sand surface
 include = leading_edge & intruding';
 
 
