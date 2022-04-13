@@ -1,6 +1,22 @@
+load('../output/all_smooth_data_2.mat')
 
+wheeldata = matfile('smooth_wheel_125.mat');
+% wheeldata = matfile('grousered_wheel_125.mat');
+pointList = wheeldata.Points';
 
-function [idxOut, depthList, pile, under] = run_extractHmap(pointList, slipAngle, sink, plotToggle)
+radius = 62.5;
+vcenter = 10;
+scale = 0.6;
+for i=23:length(all_results)
+    i
+    result = all_results(i);
+    wr = result.Vry;
+    w = wr / radius;
+    sinkage = abs(result.avg_Z);
+    slipAngle = result.beta * pi / 180;
+    save_extractHmap(pointList', result.beta, sinkage / 1000,wr, 1)
+end
+function save_extractHmap(pointList, slipAngle, sink, wr, plotToggle)
 
 pointList(1,:) = pointList(1,:) - 0.5*(max(pointList(1,:))-min(pointList(1,:)));
 pointListOriginal = pointList;
@@ -92,33 +108,8 @@ for i = 1:size(Xtrimed,1)
     end
 end
 
-
-
-pointListOriginal = rotateZ(pointListOriginal, -slipAngle * pi/180);
-spz = interp2(double(Xtrimed), double(Ytrimed), double(SandHmapnew), pointListOriginal(1,:)', pointListOriginal(2,:)');
-spz = spz';
-
-depth =  - wheelDiameter/ 2 + sink * 1000;
-depth
-pile = pointListOriginal(3,:) < spz & pointListOriginal(3,:) > depth;
-under = pointListOriginal(3,:) < spz & pointListOriginal(3,:) <= depth;
-idxOut = pile | under;
-
-depthList = zeros(1, num);
-depthList(pile) = abs(spz(pile) - pointList(3,pile)) * 0.1693;
-
-depthListPile = depthList(pile);
-pointListPile = pointList(:,pile);
-
-depthList(under) = min(abs(depth - pointList(3,under)), abs(spz(under) - pointList(3,under)));
-depthListUnder = depthList(under);
-pointListUnder = pointList(:,under);
-
-depthList(~idxOut) = 0;
-
-
-
-
+fname = sprintf('%dsand%d.mat',slipAngle, wr)
+save(fname, 'SandHmapnew', 'Xtrimed', 'Ytrimed');
 if plotToggle == 1
 
     figure
@@ -132,31 +123,6 @@ if plotToggle == 1
 
     figure
     s = surf(Xtrimed, Ytrimed, SandHmapnew, 'FaceAlpha', 0.5);
-    
-    figure
-    plot3(pointList(1,pile), pointList(2,pile), pointList(3,pile),'.','Color',[0.1,0.1,0.1],'MarkerSize',3);
-    hold on
-    plot3(pointList(1,under), pointList(2,under), pointList(3,under),'.','Color',[0.2,0.2,0.2],'MarkerSize',3);
-    plot3(pointList(1,(~under & ~pile)), pointList(2,(~under & ~pile)), pointList(3,(~under & ~pile)),'.','Color',[0.9,0.9,0.9],'MarkerSize',1);
-    s = surf(Xtrimed, Ytrimed, SandHmapnew, 'FaceAlpha', 0.4);
-    s.EdgeColor = [0.9 0.9 0.9];
-    s.FaceColor = [1 1 0];
-    axis equal 
-    daspect([1 1 1])
-    view(-105,25)
-    figure
-    plot3(pointList(1,pile), pointList(2,pile), pointList(3,pile),'.','Color','r','MarkerSize',7);
-    hold on
-
-    
-    plot3(pointList(1,under), pointList(2,under), pointList(3,under),'.','Color','b','MarkerSize',7);
-    
-    plot3(pointList(1,(~under & ~pile)), pointList(2,(~under & ~pile)), pointList(3,(~under & ~pile)),'.','Color',[0.8,0.8,0.8],'MarkerSize',1);
-    s = surf(Xtrimed, Ytrimed, SandHmapnew, 'FaceAlpha', 0.5);
-    s.EdgeColor = 'none';
-    axis equal 
-    legend('pile-up','undisturbed')
-    view(-105,25)
 
    
 end
