@@ -17,8 +17,8 @@ for i=1:length(all_results)
     slipAngle = result.beta * pi / 180;
     
     %% rft function here
-%     [Force] = RFT3Dfunc(wheeldata, radius, slipAngle, w, vcenter, sinkage, scale, 0);
-    [Force] = RFT3DSandfunc(wheeldata, radius, slipAngle, w, vcenter, sinkage, scale, 0);
+    [Force] = RFT3Dfunc(wheeldata, radius, slipAngle, w, vcenter, sinkage, scale, 0);
+%     [Force] = RFT3DSandfunc(wheeldata, radius, slipAngle, w, vcenter, sinkage, wr, scale, 0);
     Fsidewall = Force(1);
     Ftractive = Force(2);
     Fload = Force(3);

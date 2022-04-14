@@ -84,8 +84,6 @@ F_i = F1 + F2 + F3;
 % superposition: sum force from each plate element to calculate total force & moment
 Fi_mat = d_inc .* a_inc .* F_i .* 10^-3;
 Fi_mag_mat = vecnorm(Fi_mat');
-size(Fi_mat)
-size(Fi_mag_mat)
 forces = sum(Fi_mat)';
 forces(1) = - forces(1);
 

@@ -13,7 +13,7 @@ sf1 = x;
 % sf2 = x(2);
 
 n = length(all_results);
-for i=1:n
+for i = 1:n
     %Extract measured forces to compare model prediction to
    
     result = all_results(i);
@@ -22,8 +22,8 @@ for i=1:n
     w = wr/radius;
     sinkage = abs(result.avg_Z);
     slipAngle = result.beta * pi / 180;
-    avg_Fx = -result.avg_Fy;
-    avg_Fy = -result.avg_Fx;
+    avg_Fx = -result.avg_Fx;
+    avg_Fy = -result.avg_Fy;
     avg_Fz = -result.avg_Fz;
     
     %0.005 sf1 0.04 sf2
@@ -34,10 +34,15 @@ for i=1:n
 %     Fz = 0;
 %     [Fx, Fy, Fz] = RFT3DDEMfunc(wheeldata, slipAngle, wr, sinkage, sf1, sf2);
     
-    [forces] = RFT3Dfunc(wheeldata, radius, slipAngle, w, 10, sinkage, sf1);
+    [forces] = RFTSandTuning(wheeldata, radius, slipAngle, w, 10, sinkage, wr, 0.6, sf1, 0);
+    
 %     err = (Fx - avg_Fx)^2/(avg_Fx^2) + (Fy - avg_Fy)^2/(avg_Fy^2) + (Fz - avg_Fz)^2/(avg_Fz^2);
-    err = (forces(1) - avg_Fx)^2 + (forces(2) - avg_Fy)^2 ;
-    error = error + err;
+    if result.beta <= 60
+        err = (forces(1) - avg_Fx)^2 + (forces(2) - avg_Fy)^2;
+        error = error + err;
+    end
+    
+    
 end
 error = double(error);    
 end

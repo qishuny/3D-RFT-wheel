@@ -1,7 +1,7 @@
 load('../output/all_smooth_data_2.mat')
 load('../output/RFToutput.mat')
 RFTori = RFToutput;
-load('../output/RFTSandoutput.mat')
+load('../output/RFTnewoutput.mat')
 RFTnew = RFToutput;
 
 x = [-1 -0.7 -0.5 -0.2 0 0.23 0.5 0.75 0.9];
@@ -524,7 +524,7 @@ xlabel(tiles, 'Slip Ratio', 'Interpreter','latex', 'FontSize', 16)
 for i=1:N
     ax(1,i) = nexttile;
     title([num2str(betas(i)), '$^\circ$'])
-    axis([-1.1 1 -40 5])
+    axis([-1.1 1 -42 5])
     hold on
     ylabel('$F_x (N)$', 'FontSize', 16)
     if i>1
@@ -534,7 +534,7 @@ for i=1:N
 end
  for i=1:N
     ax(2,i) = nexttile;
-    axis([-1.1 1 -40 5])
+    axis([-1.1 1 -45 5])
     hold on
     ylabel('$F_y (N)$', 'FontSize', 16)
     if i>1

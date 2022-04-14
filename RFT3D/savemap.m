@@ -7,7 +7,7 @@ pointList = wheeldata.Points';
 radius = 62.5;
 vcenter = 10;
 scale = 0.6;
-for i=23:length(all_results)
+for i=74:length(all_results)
     i
     result = all_results(i);
     wr = result.Vry;

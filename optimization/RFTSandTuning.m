@@ -1,4 +1,4 @@
-function [forces] = RFT3DSandfunc(wheeldata, radius, slipAngle, w, vcenter, sinkage, vry, scale, plot)
+function [forces] = RFTSandTuning(wheeldata, radius, slipAngle, w, vcenter, sinkage, vry, scale, sf1, plot)
 
 if nargin < 8 || isempty(plot)
         plot = 0;
@@ -35,7 +35,7 @@ leading_edge = dot(n_norm_vec, v_norm_vec, 2) > 0;      % plate's normal vector 
 addpath('../BK_terra')  
 % [intruding, depthList, pile, under] = run_extractHmap(pointList', slipAngle * 180 / pi, abs(sinkage / 1000), plot);
 %run the saved heightmap from simulation
-[intruding, depthList, pile, under] = SandDeformation(pointList', slipAngle, depth, vry, plot);% plate is below sand surface
+[intruding, depthList, pile, under] = SandDeformationTuning(pointList', slipAngle, depth, vry, sf1, plot);% plate is below sand surface
 include = leading_edge & intruding';
 
 

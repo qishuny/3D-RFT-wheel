@@ -1,6 +1,6 @@
 
 
-function [idxOut, depthList, pile, under] = SandDeformation(pointList, slipAngle, depth,Vry, plot)
+function [idxOut, depthList, pile, under] = SandDeformationTuning(pointList, slipAngle, depth,Vry, sf1, plot)
 slipAngle_degree = slipAngle*180/pi;
 num = size(pointList, 2);
 pointList(1,:) = pointList(1,:) - 0.5*(max(pointList(1,:))-min(pointList(1,:)));
@@ -25,8 +25,7 @@ idxOut = pile | under;
 
 
 depthList = zeros(1, num);
-% 0.1513
-depthList(pile) = abs(spz(pile) - pointList(3,pile)) * 0.2843;
+depthList(pile) = abs(spz(pile) - pointList(3,pile)) * sf1;
 
 depthListPile = depthList(pile);
 pointListPile = pointList(:,pile);
