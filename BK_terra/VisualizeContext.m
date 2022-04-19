@@ -112,11 +112,12 @@ classdef VisualizeContext < handle
                         this.hLines{end+1} = plot3(this.hAxes, lines{lineidx}(1,:),lines{lineidx}(2,:),lines{lineidx}(3,:),'k-');
                     end
                 end
-                this.hSurf.EdgeColor = 'none'; 
+                this.hSurf.EdgeColor = [0.5 0.5 0.5]; 
                 colormap(this.mycolormap);
                 axis(this.hAxes, [xmin xmax ymin ymax -xmax/5 xmax])
                 xlabel(this.hAxes, 'x'); ylabel(this.hAxes, 'y'); zlabel(this.hAxes, 'z');
                 this.hAxes.View = [this.yaw_angle_view this.pitch_angle_view];
+                daspect([1 1 1]);
                 hold(this.hAxes, 'off');
             else
                 % Actual drawing happens here 

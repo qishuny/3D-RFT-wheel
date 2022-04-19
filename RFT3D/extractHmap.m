@@ -195,7 +195,6 @@ for i = 1:length(X)
     for steadystate=1:200
         Sand.update_onestep;
         Sand.resolve_collision(indices,zvec,velocity);
-%         Sand.resolve_collision(indices,zvec,velocity);
 %         visualizeContext.visualize(Sand.matrix,lines_wcoord);
     end
 

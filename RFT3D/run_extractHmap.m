@@ -99,7 +99,7 @@ spz = interp2(double(Xtrimed), double(Ytrimed), double(SandHmapnew), pointListOr
 spz = spz';
 
 depth =  - wheelDiameter/ 2 + sink * 1000;
-depth
+
 pile = pointListOriginal(3,:) < spz & pointListOriginal(3,:) > depth;
 under = pointListOriginal(3,:) < spz & pointListOriginal(3,:) <= depth;
 idxOut = pile | under;
@@ -123,41 +123,55 @@ if plotToggle == 1
 
     figure
     s1 = surf(Xtrimed, Ytrimed, SandHmapOriginal, 'FaceAlpha', 0.5);
+%     s1.EdgeColor = 'none';
     hold on
-    scatter3(wheelPos(1), wheelPos(2), wheelPos(3),'r')
-    
-    axis equal
-    figure
-    plot(f1, [x y], z, 'Exclude', exclude);
-
-    figure
-    s = surf(Xtrimed, Ytrimed, SandHmapnew, 'FaceAlpha', 0.5);
-    
-    figure
-    plot3(pointList(1,pile), pointList(2,pile), pointList(3,pile),'.','Color',[0.1,0.1,0.1],'MarkerSize',3);
-    hold on
-    plot3(pointList(1,under), pointList(2,under), pointList(3,under),'.','Color',[0.2,0.2,0.2],'MarkerSize',3);
-    plot3(pointList(1,(~under & ~pile)), pointList(2,(~under & ~pile)), pointList(3,(~under & ~pile)),'.','Color',[0.9,0.9,0.9],'MarkerSize',1);
-    s = surf(Xtrimed, Ytrimed, SandHmapnew, 'FaceAlpha', 0.4);
-    s.EdgeColor = [0.9 0.9 0.9];
-    s.FaceColor = [1 1 0];
-    axis equal 
+    scatter3(wheelPos(1), wheelPos(2), wheelPos(3),'r', 'filled')
+    legend('Sand Heighmap', 'Wheel location')
+    view(-105,45)
     daspect([1 1 1])
-    view(-105,25)
+    hold off 
+    axis equal
+    
+    
+    figure
+    hold on 
+    p = plot(f1, [x y], z, 'Exclude', exclude);
+    view(-105,45)
+    alpha(.5)
+    s = surf(Xtrimed, Ytrimed, SandHmapnew, 'FaceAlpha', 0.5);
+%     s.EdgeColor = 'none';
+    hold off
+    daspect([1 1 1])
+    legend('Included Points','Excluded Points', 'Fitted Curve');
+%     plot(f1, 'FaceAlpha', 0.5);
+
+
+%     figure
+%     plot3(pointList(1,pile), pointList(2,pile), pointList(3,pile),'.','Color',[0.1,0.1,0.1],'MarkerSize',3);
+%     hold on
+%     plot3(pointList(1,under), pointList(2,under), pointList(3,under),'.','Color',[0.2,0.2,0.2],'MarkerSize',3);
+%     plot3(pointList(1,(~under & ~pile)), pointList(2,(~under & ~pile)), pointList(3,(~under & ~pile)),'.','Color',[0.9,0.9,0.9],'MarkerSize',1);
+%     s = surf(Xtrimed, Ytrimed, SandHmapnew, 'FaceAlpha', 0.4);
+%     s.EdgeColor = [0.9 0.9 0.9];
+%     s.FaceColor = [1 1 0];
+%     s.EdgeColor = 'none';
+%     axis equal 
+%     daspect([1 1 1])
+%     view(-105,45)
+    
     figure
     plot3(pointList(1,pile), pointList(2,pile), pointList(3,pile),'.','Color','r','MarkerSize',7);
     hold on
 
-    
     plot3(pointList(1,under), pointList(2,under), pointList(3,under),'.','Color','b','MarkerSize',7);
     
     plot3(pointList(1,(~under & ~pile)), pointList(2,(~under & ~pile)), pointList(3,(~under & ~pile)),'.','Color',[0.8,0.8,0.8],'MarkerSize',1);
     s = surf(Xtrimed, Ytrimed, SandHmapnew, 'FaceAlpha', 0.5);
-    s.EdgeColor = 'none';
+%     s.EdgeColor = 'none';
     axis equal 
     legend('pile-up','undisturbed')
     view(-105,25)
-
+     daspect([1 1 1])
    
 end
 

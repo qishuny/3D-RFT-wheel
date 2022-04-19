@@ -1,21 +1,14 @@
-load('../output/all_smooth_data_2.mat')
-addpath('../BK_terra') 
 wheeldata = matfile('smooth_wheel_125.mat');
 % wheeldata = matfile('grousered_wheel_125.mat');
 pointList = wheeldata.Points';
-
+addpath('../BK_terra') 
 radius = 62.5;
 vcenter = 10;
 scale = 0.6;
-for i=1:length(all_results)
-    i
-    result = all_results(i);
-    wr = result.Vry;
-    w = wr / radius;
-    sinkage = abs(result.avg_Z);
-    slipAngle = result.beta * pi / 180;
-    save_extractHmap(pointList', result.beta, sinkage / 1000, wr, 1)
-end
+sinkage = 40;
+wr = 10;
+save_extractHmap(pointList', 30, sinkage / 1000, wr, 1)
+
 function save_extractHmap(pointList, slipAngle, sink, wr, plotToggle)
 
 pointList(1,:) = pointList(1,:) - 0.5*(max(pointList(1,:))-min(pointList(1,:)));

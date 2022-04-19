@@ -1,8 +1,8 @@
 % load experiment data
-load('../output/all_smooth_data_2.mat')
+load('../output/all_grouser_data_2.mat')
 
 % load wheel point data
-wheeldata = matfile('../data/smooth_wheel_125.mat');
+wheeldata = matfile('../data/grousered_wheel_125.mat');
 radius = 62.5;
 vcenter = 10;
 scale = 0.6;
@@ -36,6 +36,6 @@ waitbar(1,h,'Completed.');
 disp("Done.");
 
 close(h);
-save('../output/RFToutput.mat','RFToutput');
+save('../output/grouserRFT.mat','RFToutput');
 
 
