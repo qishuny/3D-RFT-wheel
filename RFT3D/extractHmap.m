@@ -50,30 +50,41 @@ BodyPose = PoseContext([],bodyxpos,bodyypos,bodyzpos,bodytheta);
 %----------------setting pointcloud for wheel (collision)
 % set particlepoints for my wheel wrt origin of Vehicle
 % 1) the x,y position of each points
-
+shrinkSize = 5/1000;
 %half the radius of wheel
 x_width = wheelDiameter/2;  
 % wheel x points
 xgrid = -x_width:Sand.get_dx/2:x_width; 
-
+xgs = -x_width + shrinkSize:Sand.get_dx/2:x_width - shrinkSize; 
 %wheel's fatness
 y_length = wheelWidth/2; 
 % wheel y points
 ygrid = -y_length:Sand.get_dx/2:y_length; 
+ygs = -y_length + shrinkSize:Sand.get_dx/2:y_length - shrinkSize; 
 
 xy_vec = []; 
+
 for i = 1:length(ygrid)
     temp = [xgrid; ones(size(xgrid))*ygrid(i)];
-    xy_vec = [xy_vec temp]; %#ok<AGROW> 
+    xy_vec = [xy_vec temp]; %#ok<AGROW>     
     %xy_vec = [x1 x2 x3 ... xn;
     %          y1 y2 y3 ... yn];
 end
 
+xys_vec = [];
+for i = 1:length(ygs)
+    temps = [xgs; ones(size(xgs))*ygs(i)];
+    xys_vec = [xys_vec temps];
+end
+
 % wheel z points
 r = x_width;
+
 z_vec = zeros(1,length(xy_vec));
+
 for i = 1:length(z_vec)
     temp = -sqrt(r^2 - xy_vec(1,i)^2);
+    
     if isreal(temp)
         z_vec(i) = temp; %circle with r
     else
@@ -81,7 +92,21 @@ for i = 1:length(z_vec)
         disp('z is imaginary');
     end
 end
+
+rs = x_width - shrinkSize;
+zs_vec = zeros(1,length(xys_vec));
+for i = 1:length(zs_vec)
+    temps = -sqrt(rs^2 - xys_vec(1,i)^2);
+    if isreal(temps)
+        zs_vec(i) = temps; %circle with r
+    else
+        zs_vec(i) = 0;
+        disp('zs is imaginary');
+    end
+end
+
 particlepoints = [xy_vec;z_vec;ones(size(z_vec))];
+particlepointss = [xys_vec;zs_vec;ones(size(zs_vec))];
 
 % join two poses: Vehicle and Wheel
 wheelxpos = 0; 
@@ -143,7 +168,11 @@ dT = 1;close all
 
 %-----------Resolve collision, visualize blade, the initial step
 particlepointsWorld = BodyPose.HT4*WheelPose.HT4*WheelPose.particles;
+
 [indices, zvec] = indexHandler.getIndex(particlepointsWorld);
+
+ppws = BodyPose.HT4*WheelPose.HT4*particlepointss;
+[indicess, zsvec] = indexHandler.getIndex(ppws);
 velocity = [0;1];
 
 sprintf('Volume of sand before interaction is %d',sum(sum(Sand.matrix)))
@@ -185,16 +214,17 @@ for i = 1:length(X)
     particlepointsWorld = BodyPose.HT4*WheelPose.HT4*WheelPose.particles;
     [indices, zvec] = indexHandler.getIndex(particlepointsWorld);
     velocity = [dX(i),dY(i)];
-
+    ppws = BodyPose.HT4*WheelPose.HT4*particlepointss;
+    [indicess, zsvec] = indexHandler.getIndex(ppws);
 %     Sand.Steadystate(indices,zvec,velocity);
     Sand.blocked_idx = [];
     Sand.resolve_collision(indices,zvec,velocity);
 %     Sand.steady_state('off');
     Sand.update_onestep;
     Sand.resolve_collision(indices,zvec,velocity);
-    for steadystate=1:200
+    for steadystate=1:1500
         Sand.update_onestep;
-        Sand.resolve_collision(indices,zvec,velocity);
+        Sand.resolve_collision(indicess,zsvec,velocity);
 %         visualizeContext.visualize(Sand.matrix,lines_wcoord);
     end
 
