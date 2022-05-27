@@ -14,7 +14,7 @@ for i=1:length(all_results)
     w = wr / radius;
     sinkage = abs(result.avg_Z);
     slipAngle = result.beta * pi / 180;
-    save_extractHmap(pointList', result.beta, sinkage / 1000, wr, 1)
+    save_extractHmap(pointList', result.beta, sinkage / 1000, wr, 0)
 end
 function save_extractHmap(pointList, slipAngle, sink, wr, plotToggle)
 

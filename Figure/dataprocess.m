@@ -1,9 +1,13 @@
-load('../output/all_grouser_data_2.mat')
-load('../output/grouserRFT.mat')
+% load('../output/all_grouser_data_2.mat')
+
+load('../output/all_smooth_data_2.mat')
+% load('../output/grouserRFT.mat')
+load('../output/smoothRFT.mat')
 RFTori = RFToutput;
-load('../output/grouserRFTSand.mat')
+load('../output/smoothRFTSand.mat')
+% load('../output/grouserRFTSand.mat')
 RFTnew = RFToutput;
-RFTori = RFTnew;
+
 x = [-1 -0.7 -0.5 -0.2 0 0.23 0.5 0.75 0.9];
 y = [0 15 30 45 60 75 90];
 

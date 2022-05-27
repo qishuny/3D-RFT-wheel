@@ -1,15 +1,17 @@
-% load experiment data
-load('../output/all_grouser_data_2.mat')
 
+% load experiment data
 % load wheel point data
-wheeldata = matfile('../data/grousered_wheel_125.mat');
+load('../output/all_smooth_data_2.mat')
+wheeldata = matfile('../data/smooth_wheel_125.mat');
+
+% load('../output/all_grouser_data_2.mat')
+% wheeldata = matfile('../data/grousered_wheel_125.mat');
 radius = 62.5;
 vcenter = 10;
 scale = 0.6;
 
 h = waitbar(0,'Initializing waitbar...');
 for i=1:length(all_results)
-    i
     result = all_results(i);
     wr = result.Vry;
     w = wr / radius;
@@ -36,6 +38,7 @@ waitbar(1,h,'Completed.');
 disp("Done.");
 
 close(h);
-save('../output/grouserRFT.mat','RFToutput');
-
+% save('../output/grouseredRFT.mat','RFToutput');
+% save('../output/smoothRFTSand.mat','RFToutput');
+save('../output/smoothRFT.mat','RFToutput');
 
